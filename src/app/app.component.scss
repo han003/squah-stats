@@ -1,0 +1,21 @@
+:host {
+  .tab-content {
+    max-width: 1000px;
+    justify-self: center;
+    width: 100%;
+    padding: 16px;
+    box-sizing: border-box;
+
+    &.players {
+      display: grid;
+      gap: 16px;
+
+      #add-new-player {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 16px;
+      }
+    }
+  }
+}
