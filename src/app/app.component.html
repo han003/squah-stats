@@ -2,12 +2,16 @@
   <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
     <mat-icon>menu</mat-icon>
   </button>
-  <span>Squash stats</span>
+  <span>Squash stats 🎾</span>
 </mat-toolbar>
 
 
-<mat-tab-group>
-  <mat-tab label="Players">
+<mat-tab-group selectedIndex="1">
+  <mat-tab>
+    <ng-template matTabLabel>
+      <span>{{ playersTabLabel() }}</span>
+    </ng-template>
+
     <div class="tab-content players">
       <div id="add-new-player">
         <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
@@ -19,8 +23,8 @@
       </div>
 
       <mat-list>
-        @for (player of players(); track player) {
-          <mat-list-item>{{ player.name() }}</mat-list-item>
+        @for (player of players(); track player.id) {
+          <mat-list-item>{{ $index + 1 }} - {{ player.name() }}</mat-list-item>
 
           @if (!$last) {
             <mat-divider></mat-divider>
@@ -30,6 +34,44 @@
     </div>
   </mat-tab>
 
+  <mat-tab label="Rounds">
+    <div class="tab-content rounds">
+      <button mat-flat-button (click)="addRound()" [disabled]="players().length < 2">Add round</button>
+
+      <div id="rounds-list">
+        @for (round of rounds(); track round.createdAt) {
+          <div class="round">
+            <span class="players">
+              @for (player of round.players; track player.player.id) {
+                <span>{{ player.player.name() }}</span>
+
+                   @if (!$last) {
+                     <span> vs </span>
+                   }
+                 }
+             </span>
+
+            <span class="score">
+                @for (player of round.players; track player.player.id) {
+                  <span>{{ player.score }}</span>
+
+                  @if (!$last) {
+                    <span> — </span>
+                  }
+                }
+             </span>
+
+            <div class="time">{{ round.createdAtTimeString }}</div>
+          </div>
+
+
+          @if (!$last) {
+            <mat-divider></mat-divider>
+          }
+        }
+      </div>
+    </div>
+  </mat-tab>
+
   <mat-tab label="Statistics"> Statistics</mat-tab>
-  <mat-tab label="Rounds"> Rounds</mat-tab>
 </mat-tab-group>

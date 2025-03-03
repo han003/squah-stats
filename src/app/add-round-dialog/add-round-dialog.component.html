@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Add round</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <form formGroupName="player1">
+      <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
+        <mat-label>Player 1</mat-label>
+        <mat-select formControlName="player">
+          @for (player of players(); track player.id) {
+            <mat-option [value]="player">{{player.name()}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
+        <mat-label>Player 1 score</mat-label>
+        <input matInput type="number" min="0" max="100" step="1" inputmode="numeric" formControlName="score">
+      </mat-form-field>
+    </form>
+
+    <form formGroupName="player2">
+      <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
+        <mat-label>Player 2</mat-label>
+        <mat-select formControlName="player">
+          @for (player of players(); track player.id) {
+            <mat-option [value]="player">{{player.name()}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
+        <mat-label>Player 2 score</mat-label>
+        <input matInput type="number" min="0" max="100" step="1" inputmode="numeric" formControlName="score">
+      </mat-form-field>
+    </form>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button mat-button [matDialogClose]="null">Cancel</button>
+  <button mat-button (click)="addRound()" [disabled]="form.invalid">Add round</button>
+</mat-dialog-actions>
