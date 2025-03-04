@@ -40,9 +40,9 @@
     </div>
   </mat-tab>
 
-  <mat-tab [label]="roundsTabLabel()">
+  <mat-tab [label]="roundsTabLabel()" [disabled]="insufficientPlayers()">
     <div class="tab-content rounds">
-      <button mat-flat-button (click)="addRound()" [disabled]="players().length < 2">Add round</button>
+      <button mat-flat-button (click)="addRound()">Add round</button>
 
       <div id="rounds-list">
         @for (round of rounds(); track round.createdAt) {
@@ -79,7 +79,7 @@
     </div>
   </mat-tab>
 
-  <mat-tab label="Statistics">
+  <mat-tab label="Statistics" [disabled]="insufficientPlayers()">
     <div class="tab-content stats">
       <table mat-table [dataSource]="dataSource()">
 
