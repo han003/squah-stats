@@ -3,7 +3,7 @@ import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import { Player } from './player';
+import { Player, PlayerSaveData } from './player';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatList, MatListItem, MatListItemMeta } from '@angular/material/list';
@@ -12,21 +12,12 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AddRoundDialogComponent, AddRoundDialogData } from './add-round-dialog/add-round-dialog.component';
-import { Round } from './round';
+import { Round, RoundSaveData } from './round';
 import { filter } from 'rxjs';
 import { MatCell, MatCellDef, MatColumnDef, MatHeaderCell, MatHeaderCellDef, MatHeaderRow, MatHeaderRowDef, MatRow, MatRowDef, MatTable } from '@angular/material/table';
 import { v4 as uuidv4 } from 'uuid';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-
-interface SaveData {
-  playerNames: string[];
-  rounds: {
-    player1Name: string;
-    player1Score: number;
-    player2Name: string;
-    player2Score: number;
-  }[];
-}
+import { DateTime } from 'luxon';
 
 @Component({
   selector: 'app-root',
@@ -67,6 +58,8 @@ export class AppComponent {
   private matDialog = inject(MatDialog)
 
   session: WritableSignal<string>;
+  playersSessionKey = computed(() => `${this.session()}-players`);
+  roundsSessionKey = computed(() => `${this.session()}-rounds`);
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   rounds = signal<Round[]>([]);
@@ -76,35 +69,54 @@ export class AppComponent {
   newPlayerControl = new FormControl<string | null>(null, Validators.required);
 
   dataSource = computed(this.computeDataSource.bind(this));
-  saveData = computed(this.computeSaveData.bind(this));
 
   constructor() {
     const url = new URL(window.location.href);
     this.session = signal(url.searchParams.get('session') || uuidv4());
 
-    const storedSession = localStorage.getItem(this.session());
-    if (storedSession) {
-      const data = JSON.parse(atob(storedSession)) as SaveData;
+    const storedPlayers = localStorage.getItem(this.playersSessionKey());
+    if (storedPlayers) {
+      const players = JSON.parse(atob(storedPlayers)) as string[];
 
-      this.players.set(data.playerNames.map(name => new Player(name)));
+      players.forEach(player => {
+        const playerData = JSON.parse(player) as PlayerSaveData;
 
-      const rounds = data.rounds.map(round => {
-        const player1 = this.players().find(p => p.name() === round.player1Name);
-        const player2 = this.players().find(p => p.name() === round.player2Name);
+        this.players.update(p => {
+          return [
+            ...p,
+            new Player(playerData.name, {id: playerData.id})
+          ];
+        });
+      })
 
-        return player1 && player2 ? new Round(player1, round.player1Score, player2, round.player2Score) : null;
-      });
+      const storedRounds = localStorage.getItem(this.roundsSessionKey());
+      if (storedRounds) {
+        const rounds = JSON.parse(atob(storedRounds)) as string[];
 
-      this.rounds.set(rounds.filter(r => r != null));
+        rounds.forEach(round => {
+          const roundData = JSON.parse(round) as RoundSaveData;
+          const player1 = this.players().find(p => p.id() === roundData.player1.id);
+          const player2 = this.players().find(p => p.id() === roundData.player2.id);
+
+          if (player1 && player2) {
+            this.rounds.update(r => {
+              return [
+                ...r,
+                new Round(player1, roundData.player1.score, player2, roundData.player2.score, {createdAt: DateTime.fromMillis(roundData.createdAt)})
+              ];
+            });
+          }
+        })
+      }
     }
 
     effect(() => {
-      url.searchParams.set('session', this.session());
       window.history.pushState({}, '', url.toString());
     })
 
     effect(() => {
-      localStorage.setItem(this.session(), btoa(JSON.stringify(this.saveData())))
+      localStorage.setItem(this.playersSessionKey(), btoa(JSON.stringify(this.players().map(p => p.toString()))));
+      localStorage.setItem(this.roundsSessionKey(), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
     })
   }
 
@@ -151,20 +163,6 @@ export class AppComponent {
         return [...r, round];
       })
     })
-  }
-
-  computeSaveData(): SaveData {
-    return {
-      playerNames: this.players().map(p => p.name()),
-      rounds: this.rounds().map(round => {
-        return {
-          player1Name: round.players[0].player.name(),
-          player1Score: round.players[0].score,
-          player2Name: round.players[1].player.name(),
-          player2Score: round.players[1].score,
-        };
-      }),
-    };
   }
 
   computeDataSource() {
