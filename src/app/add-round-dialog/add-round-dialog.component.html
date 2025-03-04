@@ -13,7 +13,13 @@
       </mat-form-field>
 
       <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
-        <mat-label>Player 1 score</mat-label>
+        @let player1 = form.controls.player1.controls.player.value;
+        @if (player1) {
+          <mat-label>{{player1.name()}} score</mat-label>
+        } @else {
+          <mat-label>Player 1 score</mat-label>
+        }
+
         <input matInput type="number" min="0" max="100" step="1" inputmode="numeric" formControlName="score">
       </mat-form-field>
     </form>
@@ -29,7 +35,13 @@
       </mat-form-field>
 
       <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
-        <mat-label>Player 2 score</mat-label>
+        @let player2 = form.controls.player2.controls.player.value;
+        @if (player2) {
+          <mat-label>{{player2.name()}} score</mat-label>
+        } @else {
+          <mat-label>Player 1 score</mat-label>
+        }
+
         <input matInput type="number" min="0" max="100" step="1" inputmode="numeric" formControlName="score">
       </mat-form-field>
     </form>

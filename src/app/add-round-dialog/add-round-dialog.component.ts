@@ -53,7 +53,15 @@ export class AddRoundDialogComponent {
     const data = inject<AddRoundDialogData>(MAT_DIALOG_DATA);
     this.players.set(
       data.players().sort((a, b) => a.name().localeCompare(b.name()))
-    )
+    );
+
+    if (this.players().length === 2) {
+      this.form.controls.player1.controls.player.setValue(this.players()[0]);
+      this.form.controls.player2.controls.player.setValue(this.players()[1]);
+
+      this.form.controls.player1.controls.player.disable();
+      this.form.controls.player2.controls.player.disable();
+    }
   }
 
   addRound() {

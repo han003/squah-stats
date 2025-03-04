@@ -163,7 +163,7 @@ export class AppComponent {
       filter(round => round != null),
     ).subscribe(round => {
       this.rounds.update(r => {
-        return [...r, round];
+        return [round, ...r];
       })
     })
   }
