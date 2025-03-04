@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
+import { Component, computed, effect, inject, signal, WritableSignal } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
@@ -6,7 +6,7 @@ import { MatButton, MatIconButton } from '@angular/material/button';
 import { Player } from './player';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
-import { MatList, MatListItem } from '@angular/material/list';
+import { MatList, MatListItem, MatListItemMeta } from '@angular/material/list';
 import { MatDivider } from '@angular/material/divider';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -57,11 +57,12 @@ interface SaveData {
     MatMenuTrigger,
     MatMenu,
     MatMenuItem,
+    MatListItemMeta,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
@@ -107,16 +108,10 @@ export class AppComponent implements OnInit {
     })
   }
 
-  ngOnInit() {
-
-  }
-
   newSession() {
     this.session.set(uuidv4());
     this.players.set([]);
     this.rounds.set([]);
-
-
 
     this.matSnackBar.open('New session started');
   }
@@ -133,6 +128,14 @@ export class AppComponent implements OnInit {
 
     this.newPlayerControl.reset();
     this.matSnackBar.open(`${name} added!`, undefined, {duration: 2000});
+  }
+
+  removePlayer(player: Player) {
+    this.players.update((p) => {
+      return [...p.filter(p => p !== player)];
+    });
+
+    this.matSnackBar.open(`${player.name()} removed!`, undefined, {duration: 2000});
   }
 
   addRound() {

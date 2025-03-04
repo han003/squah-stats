@@ -8,7 +8,7 @@ interface RoundPlayer {
 
 export class Round {
   createdAt = DateTime.now();
-  createdAtTimeString = this.createdAt.toLocaleString(DateTime.TIME_24_SIMPLE);
+  createdAtTimeString = this.createdAt.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
   players: RoundPlayer[];
   winner: RoundPlayer | null = null;
 

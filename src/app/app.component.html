@@ -10,7 +10,7 @@
   <button mat-menu-item (click)="newSession()">New session</button>
 </mat-menu>
 
-<mat-tab-group selectedIndex="2">
+<mat-tab-group>
   <mat-tab [label]="playersTabLabel()">
     <div class="tab-content players">
       <div id="add-new-player">
@@ -24,7 +24,13 @@
 
       <mat-list>
         @for (player of players(); track player.id) {
-          <mat-list-item>{{ $index + 1 }} - {{ player.name() }}</mat-list-item>
+          <mat-list-item>
+            <span matListItemTitle >{{ $index + 1 }}. {{ player.name() }}</span>
+
+            <button mat-icon-button (click)="removePlayer(player)" matListItemMeta>
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-list-item>
 
           @if (!$last) {
             <mat-divider></mat-divider>
