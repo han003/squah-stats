@@ -7,7 +7,7 @@
         <mat-label>Player 1</mat-label>
         <mat-select formControlName="player">
           @for (player of players(); track player.id) {
-            <mat-option [value]="player">{{player.name()}}</mat-option>
+            <mat-option [value]="player" [disabled]="form.controls.player2.controls.player.value?.id === player.id">{{player.name()}}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -23,7 +23,7 @@
         <mat-label>Player 2</mat-label>
         <mat-select formControlName="player">
           @for (player of players(); track player.id) {
-            <mat-option [value]="player">{{player.name()}}</mat-option>
+            <mat-option [value]="player" [disabled]="form.controls.player1.controls.player.value?.id === player.id">{{player.name()}}</mat-option>
           }
         </mat-select>
       </mat-form-field>

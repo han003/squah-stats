@@ -1,4 +1,4 @@
-import {Component, inject, Signal} from '@angular/core';
+import { Component, inject, signal, Signal } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions, MatDialogClose,
@@ -6,13 +6,13 @@ import {
   MatDialogRef,
   MatDialogTitle
 } from '@angular/material/dialog';
-import {Player} from '../player';
-import {MatFormField, MatLabel} from '@angular/material/form-field';
-import {MatOption, MatSelect} from '@angular/material/select';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatInput} from '@angular/material/input';
-import {MatButton} from '@angular/material/button';
-import {Round} from '../round';
+import { Player } from '../player';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatInput } from '@angular/material/input';
+import { MatButton } from '@angular/material/button';
+import { Round } from '../round';
 
 export interface AddRoundDialogData {
   players: Signal<Player[]>;
@@ -37,7 +37,7 @@ export interface AddRoundDialogData {
   styleUrl: './add-round-dialog.component.scss'
 })
 export class AddRoundDialogComponent {
-  players: Signal<Player[]>;
+  players = signal<Player[]>([]);
   form = new FormGroup({
     player1: new FormGroup({
       player: new FormControl<Player | null>(null, Validators.required),
@@ -51,8 +51,9 @@ export class AddRoundDialogComponent {
 
   constructor(public dialogRef: MatDialogRef<AddRoundDialogComponent>) {
     const data = inject<AddRoundDialogData>(MAT_DIALOG_DATA);
-    console.log(data);
-    this.players = data.players;
+    this.players.set(
+      data.players().sort((a, b) => a.name().localeCompare(b.name()))
+    )
   }
 
   addRound() {

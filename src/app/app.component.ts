@@ -64,29 +64,46 @@ export class AppComponent {
   ]);
   playersTabLabel = computed(() => `Players (${this.players().length})`)
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
-  statsColumns = ['player', 'matches', 'wins', 'points', 'pointsPerMatch'];
+  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch'];
   newPlayerControl = new FormControl<string | null>(null, Validators.required);
 
   dataSource = computed(() => {
     const players = this.players();
     const rounds = this.rounds();
 
+    const decimalFormatter = new Intl.NumberFormat(this.language(), {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 1,
+    });
+
+    const integerFormatter = new Intl.NumberFormat(this.language(), {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+    });
+
+    const percentFormatter = new Intl.NumberFormat(this.language(), {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 1,
+      style: 'percent',
+    });
+
     return players.map(player => {
       const playerRounds = rounds.filter(round => round.players.some(p => p.player.id === player.id));
       const matches = playerRounds.length;
       const wins = playerRounds.filter(round => round.winner?.player.id === player.id).length;
+      const winRate = matches > 0 ? wins / matches : 0;
       const points = playerRounds.reduce((acc, round) => {
         const roundPlayer = round.players.find(p => p.player === player);
         return roundPlayer ? acc + roundPlayer.score : acc;
       }, 0);
-      const pointsPerMatch = matches > 0 ? points / matches : 0;
 
       return {
         player,
-        matches,
-        wins,
-        points,
-        pointsPerMatch,
+        matches: integerFormatter.format(matches),
+        wins: integerFormatter.format(wins),
+        points: integerFormatter.format(points),
+        pointsPerMatch: decimalFormatter.format(matches > 0 ? points / matches : 0),
+        winRate: percentFormatter.format(winRate),
       }
     });
   })

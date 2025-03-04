@@ -55,6 +55,10 @@
     &.stats {
       padding: 0;
 
+      th {
+        white-space: nowrap;
+      }
+
       .number-cell {
         text-align: right;
       }
