@@ -8,7 +8,7 @@ interface RoundPlayer {
 }
 
 export interface RoundSaveData {
-  createdAt: number;
+  createdAt: string;
   player1: {
     id: string;
     score: number;
@@ -20,8 +20,10 @@ export interface RoundSaveData {
 }
 
 export class Round {
+  static readonly createdAtFormat = 'yyyy-MM-dd HH:mm:ss';
+
   createdAt = signal(DateTime.now());
-  createdAtTimeString = computed(() => this.createdAt().toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS));
+  createdAtTimeString = computed(() => this.createdAt().toLocaleString(DateTime.DATETIME_MED));
   players: RoundPlayer[];
   winner: RoundPlayer | null = null;
 
@@ -38,7 +40,7 @@ export class Round {
 
   toString() {
     const object: RoundSaveData = {
-      createdAt: this.createdAt().toUnixInteger(),
+      createdAt: this.createdAt().toFormat(Round.createdAtFormat),
       player1: {
         id: this.players[0].player.id(),
         score: this.players[0].score

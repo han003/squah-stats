@@ -58,8 +58,8 @@ export class AppComponent {
   private matDialog = inject(MatDialog)
 
   session: WritableSignal<string>;
-  playersSessionKey = computed(() => `${this.session()}-players`);
-  roundsSessionKey = computed(() => `${this.session()}-rounds`);
+  playersSessionKey = computed(() => `session-${this.session()}-players`);
+  roundsSessionKey = computed(() => `session-${this.session()}-rounds`);
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   rounds = signal<Round[]>([]);
@@ -102,7 +102,7 @@ export class AppComponent {
             this.rounds.update(r => {
               return [
                 ...r,
-                new Round(player1, roundData.player1.score, player2, roundData.player2.score, {createdAt: DateTime.fromMillis(roundData.createdAt)})
+                new Round(player1, roundData.player1.score, player2, roundData.player2.score, {createdAt: DateTime.fromFormat(roundData.createdAt, Round.createdAtFormat)})
               ];
             });
           }
@@ -111,6 +111,7 @@ export class AppComponent {
     }
 
     effect(() => {
+      url.searchParams.set('session', this.session());
       window.history.pushState({}, '', url.toString());
     })
 
