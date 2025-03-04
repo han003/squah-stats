@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
@@ -15,6 +15,18 @@ import { AddRoundDialogComponent, AddRoundDialogData } from './add-round-dialog/
 import { Round } from './round';
 import { filter } from 'rxjs';
 import { MatCell, MatCellDef, MatColumnDef, MatHeaderCell, MatHeaderCellDef, MatHeaderRow, MatHeaderRowDef, MatRow, MatRowDef, MatTable } from '@angular/material/table';
+import { v4 as uuidv4 } from 'uuid';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+
+interface SaveData {
+  playerNames: string[];
+  rounds: {
+    player1Name: string;
+    player1Score: number;
+    player2Name: string;
+    player2Score: number;
+  }[];
+}
 
 @Component({
   selector: 'app-root',
@@ -42,32 +54,117 @@ import { MatCell, MatCellDef, MatColumnDef, MatHeaderCell, MatHeaderCellDef, Mat
     MatRow,
     MatRowDef,
     MatHeaderRowDef,
+    MatMenuTrigger,
+    MatMenu,
+    MatMenuItem,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
-  player1 = new Player('Joar');
-  player2 = new Player('Melting');
-
+  session: WritableSignal<string>;
   language = signal(navigator.language);
-  players = signal<Player[]>([
-    this.player1,
-    this.player2,
-  ]);
-  rounds = signal<Round[]>([
-    new Round(this.player1, 11, this.player2, 2),
-    new Round(this.player1, 11, this.player2, 2),
-  ]);
+  players = signal<Player[]>([]);
+  rounds = signal<Round[]>([]);
   playersTabLabel = computed(() => `Players (${this.players().length})`)
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch'];
   newPlayerControl = new FormControl<string | null>(null, Validators.required);
 
-  dataSource = computed(() => {
+  dataSource = computed(this.computeDataSource.bind(this));
+  saveData = computed(this.computeSaveData.bind(this));
+
+  constructor() {
+    const url = new URL(window.location.href);
+    this.session = signal(url.searchParams.get('session') || uuidv4());
+
+    const storedSession = localStorage.getItem(this.session());
+    if (storedSession) {
+      const data = JSON.parse(atob(storedSession)) as SaveData;
+
+      this.players.set(data.playerNames.map(name => new Player(name)));
+
+      const rounds = data.rounds.map(round => {
+        const player1 = this.players().find(p => p.name() === round.player1Name);
+        const player2 = this.players().find(p => p.name() === round.player2Name);
+
+        return player1 && player2 ? new Round(player1, round.player1Score, player2, round.player2Score) : null;
+      });
+
+      this.rounds.set(rounds.filter(r => r != null));
+    }
+
+    effect(() => {
+      url.searchParams.set('session', this.session());
+      window.history.pushState({}, '', url.toString());
+    })
+
+    effect(() => {
+      localStorage.setItem(this.session(), btoa(JSON.stringify(this.saveData())))
+    })
+  }
+
+  ngOnInit() {
+
+  }
+
+  newSession() {
+    this.session.set(uuidv4());
+    this.players.set([]);
+    this.rounds.set([]);
+
+
+
+    this.matSnackBar.open('New session started');
+  }
+
+  addPlayer() {
+    const name = this.newPlayerControl.value;
+    if (!name) {
+      return;
+    }
+
+    this.players.update((p) => {
+      return [...p, new Player(name)];
+    });
+
+    this.newPlayerControl.reset();
+    this.matSnackBar.open(`${name} added!`, undefined, {duration: 2000});
+  }
+
+  addRound() {
+    this.matDialog.open<AddRoundDialogComponent, AddRoundDialogData, Round>(AddRoundDialogComponent, {
+      disableClose: true,
+      data: {
+        players: this.players,
+      }
+    }).afterClosed().pipe(
+      filter(round => round != null),
+    ).subscribe(round => {
+      this.rounds.update(r => {
+        return [...r, round];
+      })
+    })
+  }
+
+  computeSaveData(): SaveData {
+    return {
+      playerNames: this.players().map(p => p.name()),
+      rounds: this.rounds().map(round => {
+        return {
+          player1Name: round.players[0].player.name(),
+          player1Score: round.players[0].score,
+          player2Name: round.players[1].player.name(),
+          player2Score: round.players[1].score,
+        };
+      }),
+    };
+  }
+
+  computeDataSource() {
     const players = this.players();
     const rounds = this.rounds();
 
@@ -106,34 +203,5 @@ export class AppComponent {
         winRate: percentFormatter.format(winRate),
       }
     });
-  })
-
-  addPlayer() {
-    const name = this.newPlayerControl.value;
-    if (!name) {
-      return;
-    }
-
-    this.players.update((p) => {
-      return [...p, new Player(name)];
-    });
-
-    this.newPlayerControl.reset();
-    this.matSnackBar.open(`${name} added!`, undefined, {duration: 2000});
-  }
-
-  addRound() {
-    this.matDialog.open<AddRoundDialogComponent, AddRoundDialogData, Round>(AddRoundDialogComponent, {
-      disableClose: true,
-      data: {
-        players: this.players,
-      }
-    }).afterClosed().pipe(
-      filter(round => round != null),
-    ).subscribe(round => {
-      this.rounds.update(r => {
-        return [...r, round];
-      })
-    })
   }
 }
