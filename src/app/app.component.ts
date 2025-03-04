@@ -4,7 +4,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { Player, PlayerSaveData } from './player';
-import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatList, MatListItem, MatListItemMeta } from '@angular/material/list';
 import { MatDivider } from '@angular/material/divider';
@@ -49,7 +49,6 @@ import { DateTime } from 'luxon';
     MatMenu,
     MatMenuItem,
     MatListItemMeta,
-    MatHint,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

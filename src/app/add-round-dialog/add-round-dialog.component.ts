@@ -65,12 +65,14 @@ export class AddRoundDialogComponent {
   }
 
   addRound() {
+    const form = this.form.getRawValue();
+
     this.dialogRef.close(
       new Round(
-        this.form.value.player1!.player!,
-        this.form.value.player1!.score!,
-        this.form.value.player2!.player!,
-        this.form.value.player2!.score!,
+        form.player1.player!,
+        form.player1.score!,
+        form.player2.player!,
+        form.player2.score!,
       )
     )
   }
