@@ -51,5 +51,13 @@
         }
       }
     }
+
+    &.stats {
+      padding: 0;
+
+      .number-cell {
+        text-align: right;
+      }
+    }
   }
 }

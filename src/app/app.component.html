@@ -6,12 +6,8 @@
 </mat-toolbar>
 
 
-<mat-tab-group selectedIndex="1">
-  <mat-tab>
-    <ng-template matTabLabel>
-      <span>{{ playersTabLabel() }}</span>
-    </ng-template>
-
+<mat-tab-group selectedIndex="2">
+  <mat-tab [label]="playersTabLabel()">
     <div class="tab-content players">
       <div id="add-new-player">
         <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
@@ -34,7 +30,7 @@
     </div>
   </mat-tab>
 
-  <mat-tab label="Rounds">
+  <mat-tab [label]="roundsTabLabel()">
     <div class="tab-content rounds">
       <button mat-flat-button (click)="addRound()" [disabled]="players().length < 2">Add round</button>
 
@@ -45,10 +41,10 @@
               @for (player of round.players; track player.player.id) {
                 <span>{{ player.player.name() }}</span>
 
-                   @if (!$last) {
-                     <span> vs </span>
-                   }
-                 }
+                @if (!$last) {
+                  <span> vs </span>
+                }
+              }
              </span>
 
             <span class="score">
@@ -73,5 +69,38 @@
     </div>
   </mat-tab>
 
-  <mat-tab label="Statistics"> Statistics</mat-tab>
+  <mat-tab label="Statistics">
+    <div class="tab-content stats">
+      <table mat-table [dataSource]="dataSource()" class="mat-elevation-z8">
+
+        <ng-container matColumnDef="player">
+          <th mat-header-cell *matHeaderCellDef>Player</th>
+          <td mat-cell *matCellDef="let item"> {{ item.player.name() }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="matches">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef>Matches</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.matches }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="wins">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef>Wins</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.wins }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="points">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef>Points</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.points }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="pointsPerMatch">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef>PPM</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerMatch }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="statsColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: statsColumns;"></tr>
+      </table>
+    </div>
+  </mat-tab>
 </mat-tab-group>

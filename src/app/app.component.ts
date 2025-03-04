@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { MatTab, MatTabGroup, MatTabLabel } from '@angular/material/tabs';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
@@ -14,6 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddRoundDialogComponent, AddRoundDialogData } from './add-round-dialog/add-round-dialog.component';
 import { Round } from './round';
 import { filter } from 'rxjs';
+import { MatCell, MatCellDef, MatColumnDef, MatHeaderCell, MatHeaderCellDef, MatHeaderRow, MatHeaderRowDef, MatRow, MatRowDef, MatTable } from '@angular/material/table';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +32,16 @@ import { filter } from 'rxjs';
     MatList,
     MatDivider,
     ReactiveFormsModule,
-    MatTabLabel,
+    MatTable,
+    MatColumnDef,
+    MatHeaderCell,
+    MatCell,
+    MatHeaderCellDef,
+    MatCellDef,
+    MatHeaderRow,
+    MatRow,
+    MatRowDef,
+    MatHeaderRowDef,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -40,13 +50,46 @@ export class AppComponent {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
+  player1 = new Player('Joar');
+  player2 = new Player('Melting');
+
+  language = signal(navigator.language);
   players = signal<Player[]>([
-    new Player('Joar'),
-    new Player('Melting'),
+    this.player1,
+    this.player2,
   ]);
-  rounds = signal<Round[]>([]);
+  rounds = signal<Round[]>([
+    new Round(this.player1, 11, this.player2, 2),
+    new Round(this.player1, 11, this.player2, 2),
+  ]);
   playersTabLabel = computed(() => `Players (${this.players().length})`)
+  roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
+  statsColumns = ['player', 'matches', 'wins', 'points', 'pointsPerMatch'];
   newPlayerControl = new FormControl<string | null>(null, Validators.required);
+
+  dataSource = computed(() => {
+    const players = this.players();
+    const rounds = this.rounds();
+
+    return players.map(player => {
+      const playerRounds = rounds.filter(round => round.players.some(p => p.player.id === player.id));
+      const matches = playerRounds.length;
+      const wins = playerRounds.filter(round => round.winner?.player.id === player.id).length;
+      const points = playerRounds.reduce((acc, round) => {
+        const roundPlayer = round.players.find(p => p.player === player);
+        return roundPlayer ? acc + roundPlayer.score : acc;
+      }, 0);
+      const pointsPerMatch = matches > 0 ? points / matches : 0;
+
+      return {
+        player,
+        matches,
+        wins,
+        points,
+        pointsPerMatch,
+      }
+    });
+  })
 
   addPlayer() {
     const name = this.newPlayerControl.value;
