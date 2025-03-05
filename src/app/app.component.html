@@ -113,6 +113,16 @@
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerMatch }}</td>
         </ng-container>
 
+        <ng-container matColumnDef="pointsPerWin">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef>PPW</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerWin }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="pointsPerLoss">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef>PPL</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerLoss }}</td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="statsColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: statsColumns;"></tr>
       </table>

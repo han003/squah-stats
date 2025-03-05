@@ -66,7 +66,7 @@ export class AppComponent {
   playersTabLabel = computed(() => `Players (${this.players().length})`)
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
-  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch'];
+  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
   newPlayerControl = new FormControl<string | null>(null, Validators.required);
 
   dataSource = computed(this.computeDataSource.bind(this));
@@ -191,10 +191,19 @@ export class AppComponent {
       const playerRounds = rounds.filter(round => round.players.some(p => p.player.id === player.id));
       const matches = playerRounds.length;
       const wins = playerRounds.filter(round => round.winner?.player.id === player.id).length;
+      const losses = matches - wins;
       const winRate = matches > 0 ? wins / matches : 0;
       const points = playerRounds.reduce((acc, round) => {
         const roundPlayer = round.players.find(p => p.player === player);
         return roundPlayer ? acc + roundPlayer.score : acc;
+      }, 0);
+      const winPoints = playerRounds.reduce((acc, round) => {
+        const roundPlayer = round.players.find(p => p.player === player);
+        return roundPlayer && round.winner === roundPlayer ? acc + roundPlayer.score : acc;
+      }, 0);
+      const losePoints = playerRounds.reduce((acc, round) => {
+        const roundPlayer = round.players.find(p => p.player === player);
+        return roundPlayer && round.winner !== roundPlayer ? acc + roundPlayer.score : acc;
       }, 0);
 
       return {
@@ -204,6 +213,8 @@ export class AppComponent {
         points: integerFormatter.format(points),
         pointsPerMatch: decimalFormatter.format(matches > 0 ? points / matches : 0),
         winRate: percentFormatter.format(winRate),
+        pointsPerWin: decimalFormatter.format(wins > 0 ? winPoints / wins : 0),
+        pointsPerLoss: decimalFormatter.format(losses > 0 ? losePoints / losses : 0),
       }
     });
   }
