@@ -64,7 +64,7 @@ export class AppComponent implements OnInit {
   private matDialog = inject(MatDialog)
 
   session = signal(new Session(uuidv4()));
-  sessionKeys = signal<string[]>([])
+  sessions = signal<Session[]>([])
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   rounds = signal<Round[]>([]);
@@ -86,11 +86,11 @@ export class AppComponent implements OnInit {
     this.rounds.set(rounds);
     this.session.set(session);
 
+    this.sessionNameControl.setValue(session.name());
+
     this.sessionNameControl.valueChanges.subscribe(value => {
-      this.session.update(s => {
-        s.name.set(value || '');
-        return s;
-      })
+      this.session().name.set(value || '');
+      this.sessions().find(s => s.key === this.session().key)?.name.set(value || '');
     })
 
     effect(() => {
@@ -108,14 +108,17 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     console.log(Object.entries(localStorage));
 
-    const sessionKeys = Object.entries(localStorage).reduce((acc, [key, value]) => {
-      acc.add(key.slice(8, 44));
+    const sessions = Object.entries(localStorage).reduce((acc, [key, value]) => {
+      const id = this.extractSessionKey(key);
+      acc.set(id, this.getSessionData(id).session);
       return acc;
-    }, new Set<string>());
+    }, new Map<string, Session>());
 
-    console.log(`sessionKeys`, sessionKeys);
+    this.sessions.set(Array.from(sessions.values()));
+  }
 
-    this.sessionKeys.set(Array.from(sessionKeys));
+  extractSessionKey(key: string) {
+    return key.replaceAll('session-', '').replaceAll('-players', '').replaceAll('-rounds', '');
   }
 
   getSessionKey(session: string) {
@@ -131,6 +134,7 @@ export class AppComponent implements OnInit {
   }
 
   getSessionData(sessionKey: string) {
+    console.log(`getSessionData`, sessionKey);
     const players: Player[] = [];
     const rounds: Round[] = [];
     const session: Session = new Session(sessionKey);
@@ -170,8 +174,10 @@ export class AppComponent implements OnInit {
   }
 
   newSession() {
-    this.session.set(new Session(uuidv4()));
-    this.sessionKeys.update(keys => [...keys, this.session().key]);
+    const session = new Session(uuidv4());
+
+    this.session.set(session);
+    this.sessions.update(sessions => [...sessions, session]);
     this.players.set([]);
     this.rounds.set([]);
 

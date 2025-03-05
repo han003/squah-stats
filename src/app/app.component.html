@@ -138,10 +138,10 @@
     <div class="tab-content sessions">
       <mat-accordion>
 
-        @for (key of sessionKeys(); track key) {
+        @for (session of sessions(); track session.key) {
           <mat-expansion-panel>
             <mat-expansion-panel-header>
-              <mat-panel-title>{{key}}</mat-panel-title>
+              <mat-panel-title>{{session.name() || session.key}}</mat-panel-title>
             </mat-expansion-panel-header>
 
             <p>This is the primary content of the panel.</p>
