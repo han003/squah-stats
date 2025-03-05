@@ -8,7 +8,7 @@ import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatList, MatListItem, MatListItemMeta } from '@angular/material/list';
 import { MatDivider } from '@angular/material/divider';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AddRoundDialogComponent, AddRoundDialogData } from './add-round-dialog/add-round-dialog.component';
@@ -58,8 +58,6 @@ export class AppComponent {
   private matDialog = inject(MatDialog)
 
   session: WritableSignal<string>;
-  playersSessionKey = computed(() => `session-${this.session()}-players`);
-  roundsSessionKey = computed(() => `session-${this.session()}-rounds`);
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   rounds = signal<Round[]>([]);
@@ -75,41 +73,9 @@ export class AppComponent {
     const url = new URL(window.location.href);
     this.session = signal(url.searchParams.get('session') || uuidv4());
 
-    const storedPlayers = localStorage.getItem(this.playersSessionKey());
-    if (storedPlayers) {
-      const players = JSON.parse(atob(storedPlayers)) as string[];
-
-      players.forEach(player => {
-        const playerData = JSON.parse(player) as PlayerSaveData;
-
-        this.players.update(p => {
-          return [
-            ...p,
-            new Player(playerData.name, {id: playerData.id})
-          ];
-        });
-      })
-
-      const storedRounds = localStorage.getItem(this.roundsSessionKey());
-      if (storedRounds) {
-        const rounds = JSON.parse(atob(storedRounds)) as string[];
-
-        rounds.forEach(round => {
-          const roundData = JSON.parse(round) as RoundSaveData;
-          const player1 = this.players().find(p => p.id() === roundData.player1.id);
-          const player2 = this.players().find(p => p.id() === roundData.player2.id);
-
-          if (player1 && player2) {
-            this.rounds.update(r => {
-              return [
-                ...r,
-                new Round(player1, roundData.player1.score, player2, roundData.player2.score, {createdAt: DateTime.fromFormat(roundData.createdAt, Round.createdAtFormat)})
-              ];
-            });
-          }
-        })
-      }
-    }
+    const {players, rounds} = this.getSessionData(this.session());
+    this.players.set(players);
+    this.rounds.set(rounds);
 
     effect(() => {
       url.searchParams.set('session', this.session());
@@ -117,9 +83,49 @@ export class AppComponent {
     })
 
     effect(() => {
-      localStorage.setItem(this.playersSessionKey(), btoa(JSON.stringify(this.players().map(p => p.toString()))));
-      localStorage.setItem(this.roundsSessionKey(), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
+      localStorage.setItem(this.getPlayersSessionKey(this.session()), btoa(JSON.stringify(this.players().map(p => p.toString()))));
+      localStorage.setItem(this.getRoundsSessionKey(this.session()), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
     })
+  }
+
+  getPlayersSessionKey(session: string) {
+    return `session-${session}-players`;
+  }
+
+  getRoundsSessionKey(session: string) {
+    return `session-${session}-rounds`;
+  }
+
+  getSessionData(session: string) {
+    const players: Player[] = [];
+    const rounds: Round[] = [];
+
+    const storedPlayers = localStorage.getItem(this.getPlayersSessionKey(session));
+    if (storedPlayers) {
+      const playerStrings = JSON.parse(atob(storedPlayers)) as string[];
+
+      playerStrings.forEach(player => {
+        const playerData = JSON.parse(player) as PlayerSaveData;
+        players.push(new Player(playerData.name, {id: playerData.id}));
+      })
+
+      const storedRounds = localStorage.getItem(this.getRoundsSessionKey(session));
+      if (storedRounds) {
+        const roundStrings = JSON.parse(atob(storedRounds)) as string[];
+
+        roundStrings.forEach(round => {
+          const roundData = JSON.parse(round) as RoundSaveData;
+          const player1 = players.find(p => p.id() === roundData.player1.id);
+          const player2 = players.find(p => p.id() === roundData.player2.id);
+
+          if (player1 && player2) {
+            rounds.push(new Round(player1, roundData.player1.score, player2, roundData.player2.score, {createdAt: DateTime.fromFormat(roundData.createdAt, Round.createdAtFormat)}))
+          }
+        })
+      }
+    }
+
+    return {players, rounds};
   }
 
   newSession() {
