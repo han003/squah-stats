@@ -67,7 +67,7 @@ export class AppComponent {
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
   statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
-  newPlayerControl = new FormControl<string | null>(null, Validators.required);
+  newPlayerControl = new FormControl<string | null>(null);
 
   dataSource = computed(this.computeDataSource.bind(this));
 

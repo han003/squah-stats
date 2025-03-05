@@ -14,12 +14,12 @@
   <mat-tab [label]="playersTabLabel()">
     <div class="tab-content players">
       <div id="add-new-player">
-        <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
+        <mat-form-field subscriptSizing="dynamic">
           <mat-label>Player name</mat-label>
           <input matInput [formControl]="newPlayerControl" (keyup.enter)="addPlayer()">
         </mat-form-field>
 
-        <button mat-button [disabled]="newPlayerControl.invalid" (click)="addPlayer()">Add player</button>
+        <button mat-button [disabled]="!newPlayerControl.value" (click)="addPlayer()">Add player</button>
       </div>
 
       <mat-list>
