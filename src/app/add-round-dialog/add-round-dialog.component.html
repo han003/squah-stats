@@ -2,7 +2,7 @@
 
 <mat-dialog-content>
   <form [formGroup]="form">
-    <form formGroupName="player1">
+    <div class="subform" formGroupName="player1">
       <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
         <mat-label>Player 1</mat-label>
         <mat-select formControlName="player">
@@ -22,9 +22,9 @@
 
         <input matInput type="number" min="0" max="100" step="1" inputmode="numeric" formControlName="score">
       </mat-form-field>
-    </form>
+    </div>
 
-    <form formGroupName="player2">
+    <div class="subform" formGroupName="player2">
       <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
         <mat-label>Player 2</mat-label>
         <mat-select formControlName="player">
@@ -44,11 +44,11 @@
 
         <input matInput type="number" min="0" max="100" step="1" inputmode="numeric" formControlName="score">
       </mat-form-field>
-    </form>
+    </div>
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions>
   <button mat-button [matDialogClose]="null">Cancel</button>
-  <button mat-button (click)="addRound()" [disabled]="form.invalid">Add round</button>
+  <button mat-button type="submit" (click)="addRound()" [disabled]="form.invalid">Add round</button>
 </mat-dialog-actions>

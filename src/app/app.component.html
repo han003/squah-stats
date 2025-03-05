@@ -13,13 +13,18 @@
 <mat-tab-group>
   <mat-tab [label]="playersTabLabel()">
     <div class="tab-content players">
+      <mat-form-field subscriptSizing="dynamic">
+        <mat-label>Session name</mat-label>
+        <input matInput [formControl]="sessionNameControl">
+      </mat-form-field>
+
       <div id="add-new-player">
-        <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
+        <mat-form-field subscriptSizing="dynamic">
           <mat-label>Player name</mat-label>
           <input matInput [formControl]="newPlayerControl" (keyup.enter)="addPlayer()">
         </mat-form-field>
 
-        <button mat-button [disabled]="newPlayerControl.invalid" (click)="addPlayer()">Add player</button>
+        <button mat-button [disabled]="!newPlayerControl.value" (click)="addPlayer()">Add player</button>
       </div>
 
       <mat-list>
@@ -113,9 +118,41 @@
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerMatch }}</td>
         </ng-container>
 
+        <ng-container matColumnDef="pointsPerWin">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef>PPW</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerWin }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="pointsPerLoss">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef>PPL</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerLoss }}</td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="statsColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: statsColumns;"></tr>
       </table>
+    </div>
+  </mat-tab>
+
+  <mat-tab label="Sessions">
+    <div class="tab-content sessions">
+      <mat-accordion>
+
+        @for (session of sessions(); track session.key) {
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{session.name() || session.key}}</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <p>This is the primary content of the panel.</p>
+
+            <mat-action-row>
+              <button mat-button (click)="loadSession(session.key)">Load session</button>
+            </mat-action-row>
+          </mat-expansion-panel>
+        }
+
+      </mat-accordion>
     </div>
   </mat-tab>
 </mat-tab-group>

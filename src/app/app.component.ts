@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal, WritableSignal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
@@ -8,7 +8,7 @@ import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatList, MatListItem, MatListItemMeta } from '@angular/material/list';
 import { MatDivider } from '@angular/material/divider';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AddRoundDialogComponent, AddRoundDialogData } from './add-round-dialog/add-round-dialog.component';
@@ -18,6 +18,9 @@ import { MatCell, MatCellDef, MatColumnDef, MatHeaderCell, MatHeaderCellDef, Mat
 import { v4 as uuidv4 } from 'uuid';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { DateTime } from 'luxon';
+import { Session, SessionSaveData } from './session';
+import { MatAccordion, MatExpansionPanel, MatExpansionPanelActionRow, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -49,81 +52,135 @@ import { DateTime } from 'luxon';
     MatMenu,
     MatMenuItem,
     MatListItemMeta,
+    MatAccordion,
+    MatExpansionPanel,
+    MatExpansionPanelTitle,
+    MatExpansionPanelHeader,
+    MatExpansionPanelActionRow,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
-  session: WritableSignal<string>;
-  playersSessionKey = computed(() => `session-${this.session()}-players`);
-  roundsSessionKey = computed(() => `session-${this.session()}-rounds`);
+  session = signal(new Session(uuidv4()));
+  sessions = signal<Session[]>([])
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   rounds = signal<Round[]>([]);
   playersTabLabel = computed(() => `Players (${this.players().length})`)
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
-  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch'];
-  newPlayerControl = new FormControl<string | null>(null, Validators.required);
+  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
+  newPlayerControl = new FormControl<string | null>(null);
+  sessionNameControl = new FormControl<string | null>(null);
 
   dataSource = computed(this.computeDataSource.bind(this));
 
   constructor() {
     const url = new URL(window.location.href);
-    this.session = signal(url.searchParams.get('session') || uuidv4());
+    const sessionKey = url.searchParams.get('session') || this.session().key;
 
-    const storedPlayers = localStorage.getItem(this.playersSessionKey());
+    const {session, players, rounds} = this.getSessionData(sessionKey);
+    this.players.set(players);
+    this.rounds.set(rounds);
+    this.session.set(session);
+
+    this.sessionNameControl.setValue(session.name());
+    this.sessionNameControl.setValue(session.name());
+
+    this.sessionNameControl.valueChanges.subscribe(value => {
+      this.session().name.set(value || '');
+      this.sessions().find(s => s.key === this.session().key)?.name.set(value || '');
+    })
+
+    effect(() => {
+      url.searchParams.set('session', this.session().key);
+      window.history.pushState({}, '', url.toString());
+    })
+
+    effect(() => {
+      localStorage.setItem(this.getSessionKey(this.session().key), btoa(this.session().toString()));
+      localStorage.setItem(this.getPlayersSessionKey(this.session().key), btoa(JSON.stringify(this.players().map(p => p.toString()))));
+      localStorage.setItem(this.getRoundsSessionKey(this.session().key), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
+    })
+  }
+
+  ngOnInit() {
+    console.log(Object.entries(localStorage));
+
+    const sessions = Object.entries(localStorage).reduce((acc, [key, value]) => {
+      const id = this.extractSessionKey(key);
+      acc.set(id, this.getSessionData(id).session);
+      return acc;
+    }, new Map<string, Session>());
+
+    this.sessions.set(Array.from(sessions.values()));
+  }
+
+  extractSessionKey(key: string) {
+    return key.replaceAll('session-', '').replaceAll('-players', '').replaceAll('-rounds', '');
+  }
+
+  getSessionKey(session: string) {
+    return `session-${session}`;
+  }
+
+  getPlayersSessionKey(session: string) {
+    return `session-${session}-players`;
+  }
+
+  getRoundsSessionKey(session: string) {
+    return `session-${session}-rounds`;
+  }
+
+  getSessionData(sessionKey: string) {
+    console.log(`getSessionData`, sessionKey);
+    const players: Player[] = [];
+    const rounds: Round[] = [];
+    const session: Session = new Session(sessionKey);
+
+    const storedSession = localStorage.getItem(this.getSessionKey(sessionKey));
+    if (storedSession) {
+      const sessionData = JSON.parse(atob(storedSession)) as SessionSaveData;
+      session.name.set(sessionData.name);
+    }
+
+    const storedPlayers = localStorage.getItem(this.getPlayersSessionKey(sessionKey));
     if (storedPlayers) {
-      const players = JSON.parse(atob(storedPlayers)) as string[];
+      const playerStrings = JSON.parse(atob(storedPlayers)) as string[];
 
-      players.forEach(player => {
+      playerStrings.forEach(player => {
         const playerData = JSON.parse(player) as PlayerSaveData;
-
-        this.players.update(p => {
-          return [
-            ...p,
-            new Player(playerData.name, {id: playerData.id})
-          ];
-        });
+        players.push(new Player(playerData.name, {id: playerData.id}));
       })
 
-      const storedRounds = localStorage.getItem(this.roundsSessionKey());
+      const storedRounds = localStorage.getItem(this.getRoundsSessionKey(sessionKey));
       if (storedRounds) {
-        const rounds = JSON.parse(atob(storedRounds)) as string[];
+        const roundStrings = JSON.parse(atob(storedRounds)) as string[];
 
-        rounds.forEach(round => {
+        roundStrings.forEach(round => {
           const roundData = JSON.parse(round) as RoundSaveData;
-          const player1 = this.players().find(p => p.id() === roundData.player1.id);
-          const player2 = this.players().find(p => p.id() === roundData.player2.id);
+          const player1 = players.find(p => p.id() === roundData.player1.id);
+          const player2 = players.find(p => p.id() === roundData.player2.id);
 
           if (player1 && player2) {
-            this.rounds.update(r => {
-              return [
-                ...r,
-                new Round(player1, roundData.player1.score, player2, roundData.player2.score, {createdAt: DateTime.fromFormat(roundData.createdAt, Round.createdAtFormat)})
-              ];
-            });
+            rounds.push(new Round(player1, roundData.player1.score, player2, roundData.player2.score, {createdAt: DateTime.fromFormat(roundData.createdAt, Round.createdAtFormat)}))
           }
         })
       }
     }
 
-    effect(() => {
-      url.searchParams.set('session', this.session());
-      window.history.pushState({}, '', url.toString());
-    })
-
-    effect(() => {
-      localStorage.setItem(this.playersSessionKey(), btoa(JSON.stringify(this.players().map(p => p.toString()))));
-      localStorage.setItem(this.roundsSessionKey(), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
-    })
+    return {session, players, rounds};
   }
 
   newSession() {
-    this.session.set(uuidv4());
+    const session = new Session(uuidv4());
+
+    this.session.set(session);
+    this.sessions.update(sessions => [...sessions, session]);
     this.players.set([]);
     this.rounds.set([]);
 
@@ -145,11 +202,21 @@ export class AppComponent {
   }
 
   removePlayer(player: Player) {
-    this.players.update((p) => {
-      return [...p.filter(p => p !== player)];
-    });
+    this.matDialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean | null>(ConfirmDialogComponent, {
+      data: {
+        title: 'Remove player',
+        message: `Are you sure you want to remove ${player.name()}?`,
+        confirmText: 'Remove',
+      }
+    }).afterClosed().subscribe(result => {
+      if (result === true) {
+        this.players.update((p) => {
+          return [...p.filter(p => p !== player)];
+        });
 
-    this.matSnackBar.open(`${player.name()} removed!`, undefined, {duration: 2000});
+        this.matSnackBar.open(`${player.name()} removed!`, undefined, {duration: 2000});
+      }
+    })
   }
 
   addRound() {
@@ -165,6 +232,10 @@ export class AppComponent {
         return [round, ...r];
       })
     })
+  }
+
+  loadSession(key: string) {
+
   }
 
   computeDataSource() {
@@ -191,10 +262,19 @@ export class AppComponent {
       const playerRounds = rounds.filter(round => round.players.some(p => p.player.id === player.id));
       const matches = playerRounds.length;
       const wins = playerRounds.filter(round => round.winner?.player.id === player.id).length;
+      const losses = matches - wins;
       const winRate = matches > 0 ? wins / matches : 0;
       const points = playerRounds.reduce((acc, round) => {
         const roundPlayer = round.players.find(p => p.player === player);
         return roundPlayer ? acc + roundPlayer.score : acc;
+      }, 0);
+      const winPoints = playerRounds.reduce((acc, round) => {
+        const roundPlayer = round.players.find(p => p.player === player);
+        return roundPlayer && round.winner === roundPlayer ? acc + roundPlayer.score : acc;
+      }, 0);
+      const losePoints = playerRounds.reduce((acc, round) => {
+        const roundPlayer = round.players.find(p => p.player === player);
+        return roundPlayer && round.winner !== roundPlayer ? acc + roundPlayer.score : acc;
       }, 0);
 
       return {
@@ -204,6 +284,8 @@ export class AppComponent {
         points: integerFormatter.format(points),
         pointsPerMatch: decimalFormatter.format(matches > 0 ? points / matches : 0),
         winRate: percentFormatter.format(winRate),
+        pointsPerWin: decimalFormatter.format(wins > 0 ? winPoints / wins : 0),
+        pointsPerLoss: decimalFormatter.format(losses > 0 ? losePoints / losses : 0),
       }
     });
   }
