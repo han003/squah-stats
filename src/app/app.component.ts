@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal, WritableSignal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
@@ -18,6 +18,8 @@ import { MatCell, MatCellDef, MatColumnDef, MatHeaderCell, MatHeaderCellDef, Mat
 import { v4 as uuidv4 } from 'uuid';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { DateTime } from 'luxon';
+import { Session, SessionSaveData } from './session';
+import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-root',
@@ -49,15 +51,20 @@ import { DateTime } from 'luxon';
     MatMenu,
     MatMenuItem,
     MatListItemMeta,
+    MatAccordion,
+    MatExpansionPanel,
+    MatExpansionPanelTitle,
+    MatExpansionPanelHeader,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
-  session: WritableSignal<string>;
+  session = signal(new Session(uuidv4()));
+  sessionKeys = signal<string[]>([])
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   rounds = signal<Round[]>([]);
@@ -66,26 +73,53 @@ export class AppComponent {
   insufficientPlayers = computed(() => this.players().length < 2);
   statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
   newPlayerControl = new FormControl<string | null>(null);
+  sessionNameControl = new FormControl<string | null>(null);
 
   dataSource = computed(this.computeDataSource.bind(this));
 
   constructor() {
     const url = new URL(window.location.href);
-    this.session = signal(url.searchParams.get('session') || uuidv4());
+    const sessionKey = url.searchParams.get('session') || this.session().key;
 
-    const {players, rounds} = this.getSessionData(this.session());
+    const {session, players, rounds} = this.getSessionData(sessionKey);
     this.players.set(players);
     this.rounds.set(rounds);
+    this.session.set(session);
+
+    this.sessionNameControl.valueChanges.subscribe(value => {
+      this.session.update(s => {
+        s.name.set(value || '');
+        return s;
+      })
+    })
 
     effect(() => {
-      url.searchParams.set('session', this.session());
+      url.searchParams.set('session', this.session().key);
       window.history.pushState({}, '', url.toString());
     })
 
     effect(() => {
-      localStorage.setItem(this.getPlayersSessionKey(this.session()), btoa(JSON.stringify(this.players().map(p => p.toString()))));
-      localStorage.setItem(this.getRoundsSessionKey(this.session()), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
+      localStorage.setItem(this.getSessionKey(this.session().key), btoa(this.session().toString()));
+      localStorage.setItem(this.getPlayersSessionKey(this.session().key), btoa(JSON.stringify(this.players().map(p => p.toString()))));
+      localStorage.setItem(this.getRoundsSessionKey(this.session().key), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
     })
+  }
+
+  ngOnInit() {
+    console.log(Object.entries(localStorage));
+
+    const sessionKeys = Object.entries(localStorage).reduce((acc, [key, value]) => {
+      acc.add(key.slice(8, 44));
+      return acc;
+    }, new Set<string>());
+
+    console.log(`sessionKeys`, sessionKeys);
+
+    this.sessionKeys.set(Array.from(sessionKeys));
+  }
+
+  getSessionKey(session: string) {
+    return `session-${session}`;
   }
 
   getPlayersSessionKey(session: string) {
@@ -96,11 +130,18 @@ export class AppComponent {
     return `session-${session}-rounds`;
   }
 
-  getSessionData(session: string) {
+  getSessionData(sessionKey: string) {
     const players: Player[] = [];
     const rounds: Round[] = [];
+    const session: Session = new Session(sessionKey);
 
-    const storedPlayers = localStorage.getItem(this.getPlayersSessionKey(session));
+    const storedSession = localStorage.getItem(this.getSessionKey(sessionKey));
+    if (storedSession) {
+      const sessionData = JSON.parse(atob(storedSession)) as SessionSaveData;
+      session.name.set(sessionData.name);
+    }
+
+    const storedPlayers = localStorage.getItem(this.getPlayersSessionKey(sessionKey));
     if (storedPlayers) {
       const playerStrings = JSON.parse(atob(storedPlayers)) as string[];
 
@@ -109,7 +150,7 @@ export class AppComponent {
         players.push(new Player(playerData.name, {id: playerData.id}));
       })
 
-      const storedRounds = localStorage.getItem(this.getRoundsSessionKey(session));
+      const storedRounds = localStorage.getItem(this.getRoundsSessionKey(sessionKey));
       if (storedRounds) {
         const roundStrings = JSON.parse(atob(storedRounds)) as string[];
 
@@ -125,11 +166,12 @@ export class AppComponent {
       }
     }
 
-    return {players, rounds};
+    return {session, players, rounds};
   }
 
   newSession() {
-    this.session.set(uuidv4());
+    this.session.set(new Session(uuidv4()));
+    this.sessionKeys.update(keys => [...keys, this.session().key]);
     this.players.set([]);
     this.rounds.set([]);
 
