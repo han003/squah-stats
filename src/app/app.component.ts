@@ -19,7 +19,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { DateTime } from 'luxon';
 import { Session, SessionSaveData } from './session';
-import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { MatAccordion, MatExpansionPanel, MatExpansionPanelActionRow, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -55,6 +56,7 @@ import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionP
     MatExpansionPanel,
     MatExpansionPanelTitle,
     MatExpansionPanelHeader,
+    MatExpansionPanelActionRow,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -86,6 +88,7 @@ export class AppComponent implements OnInit {
     this.rounds.set(rounds);
     this.session.set(session);
 
+    this.sessionNameControl.setValue(session.name());
     this.sessionNameControl.setValue(session.name());
 
     this.sessionNameControl.valueChanges.subscribe(value => {
@@ -199,11 +202,21 @@ export class AppComponent implements OnInit {
   }
 
   removePlayer(player: Player) {
-    this.players.update((p) => {
-      return [...p.filter(p => p !== player)];
-    });
+    this.matDialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean | null>(ConfirmDialogComponent, {
+      data: {
+        title: 'Remove player',
+        message: `Are you sure you want to remove ${player.name()}?`,
+        confirmText: 'Remove',
+      }
+    }).afterClosed().subscribe(result => {
+      if (result === true) {
+        this.players.update((p) => {
+          return [...p.filter(p => p !== player)];
+        });
 
-    this.matSnackBar.open(`${player.name()} removed!`, undefined, {duration: 2000});
+        this.matSnackBar.open(`${player.name()} removed!`, undefined, {duration: 2000});
+      }
+    })
   }
 
   addRound() {
@@ -219,6 +232,10 @@ export class AppComponent implements OnInit {
         return [round, ...r];
       })
     })
+  }
+
+  loadSession(key: string) {
+
   }
 
   computeDataSource() {
