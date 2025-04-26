@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
-import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { MatTab, MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
@@ -72,6 +72,7 @@ export class AppComponent implements OnInit {
   protected version = '0.1.0';
   session = signal(new Session(uuidv4()));
   sessions = signal<Session[]>([])
+  selectedTabIndex = signal(0);
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   rounds = signal<Round[]>([]);
@@ -90,6 +91,8 @@ export class AppComponent implements OnInit {
   constructor() {
     const url = new URL(window.location.href);
     const sessionKey = url.searchParams.get('session') || this.session().key;
+    const initialTab = parseInt(String(url.searchParams.get('tab')));
+    this.selectedTabIndex.set(Number.isFinite(initialTab) ? initialTab : 0);
 
     const {session, players, rounds} = this.getSessionData(sessionKey);
     this.players.set(players);
@@ -193,6 +196,12 @@ export class AppComponent implements OnInit {
     this.rounds.set([]);
 
     this.matSnackBar.open('New session started');
+  }
+
+  tabChange(event: number) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', event.toString());
+    window.history.pushState({}, '', url.toString());
   }
 
   addPlayer() {

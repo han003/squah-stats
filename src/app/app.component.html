@@ -12,7 +12,7 @@
   <button mat-menu-item disabled>version {{version}}</button>
 </mat-menu>
 
-<mat-tab-group>
+<mat-tab-group (selectedIndexChange)="tabChange($event)" [selectedIndex]="selectedTabIndex()">
   <mat-tab [label]="playersTabLabel()">
     <div class="tab-content players">
       <mat-form-field subscriptSizing="dynamic">
@@ -88,7 +88,7 @@
 
   <mat-tab label="Statistics" [disabled]="insufficientPlayers()">
     <div class="tab-content stats">
-      <table [class.default-sort]="isDefaultSort()" mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortStats($event)">
+      <table [class.default-sort]="isDefaultSort() && rounds().length" mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortStats($event)">
 
         <ng-container matColumnDef="player" sticky>
           <th mat-header-cell *matHeaderCellDef mat-sort-header="player">Player</th>
