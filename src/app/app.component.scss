@@ -58,8 +58,53 @@
       &.stats {
         padding: 0;
 
-        th {
-          white-space: nowrap;
+        table {
+          &.default-sort {
+            tr:nth-child(1) {
+              td:first-child {
+                border-left-color: gold;
+
+                span {
+                  position: relative;
+
+                  &:before {
+                    content: '👑';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    transform: translate3d(-45%, -50%, 0) rotate(332deg);
+                    font-size: 15px;
+                  }
+                }
+              }
+            }
+
+            tr:nth-child(2) {
+              td:first-child {
+                border-left-color: silver;
+              }
+            }
+
+            tr:nth-child(3) {
+              td:first-child {
+                border-left-color: #CD7F32;
+              }
+            }
+          }
+
+          th, td {
+            &:first-child {
+              border-left: 4px solid transparent;
+            }
+          }
+
+          thead {
+            user-select: none;
+
+            th {
+              white-space: nowrap;
+            }
+          }
         }
 
         .number-cell {
