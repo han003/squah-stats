@@ -8,6 +8,8 @@
 
 <mat-menu #menu="matMenu">
   <button mat-menu-item (click)="newSession()">New session</button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item disabled>version {{version}}</button>
 </mat-menu>
 
 <mat-tab-group>
@@ -86,11 +88,13 @@
 
   <mat-tab label="Statistics" [disabled]="insufficientPlayers()">
     <div class="tab-content stats">
-      <table mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortStats($event)">
+      <table [class.default-sort]="isDefaultSort()" mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortStats($event)">
 
         <ng-container matColumnDef="player" sticky>
           <th mat-header-cell *matHeaderCellDef mat-sort-header="player">Player</th>
-          <td mat-cell *matCellDef="let item"> {{ item.player.name() }}</td>
+          <td mat-cell *matCellDef="let item">
+            <span> {{ item.player.name() }}</span>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="matches">

@@ -69,6 +69,7 @@ export class AppComponent implements OnInit {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
+  protected version = '0.1.0';
   session = signal(new Session(uuidv4()));
   sessions = signal<Session[]>([])
   language = signal(navigator.language);
@@ -76,6 +77,7 @@ export class AppComponent implements OnInit {
   rounds = signal<Round[]>([]);
   sortBy = signal<string>('');
   sortDirection = signal<SortDirection>('');
+  isDefaultSort = computed(() => !this.sortDirection());
   playersTabLabel = computed(() => `Players (${this.players().length})`)
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
@@ -254,6 +256,7 @@ export class AppComponent implements OnInit {
     const rounds = this.rounds();
     const sortBy = this.sortBy();
     const sortDirection = this.sortDirection();
+    const isDefaultSort = this.isDefaultSort();
 
     const decimalFormatter = new Intl.NumberFormat(this.language(), {
       maximumFractionDigits: 1,
@@ -334,6 +337,11 @@ export class AppComponent implements OnInit {
       'en',
       [
         (x) => {
+          const defaultSortValue = x.winRate.value;
+          if (isDefaultSort) {
+            return defaultSortValue;
+          }
+
           switch (sortBy) {
             case 'player': {
               return x.player.name();
@@ -361,7 +369,7 @@ export class AppComponent implements OnInit {
             }
           }
 
-          return x.winRate.value;
+          return defaultSortValue;
         },
         (x) => x.pointsPerLoss.value
       ],
