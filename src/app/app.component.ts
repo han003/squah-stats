@@ -21,7 +21,8 @@ import { DateTime } from 'luxon';
 import { Session, SessionSaveData } from './session';
 import { MatAccordion, MatExpansionPanel, MatExpansionPanelActionRow, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
 import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog/confirm-dialog.component';
-import { MatSort, MatSortHeader, Sort } from '@angular/material/sort';
+import { MatSort, MatSortHeader, Sort, SortDirection } from '@angular/material/sort';
+import { sort } from './shared/sort';
 
 @Component({
   selector: 'app-root',
@@ -73,6 +74,8 @@ export class AppComponent implements OnInit {
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   rounds = signal<Round[]>([]);
+  sortBy = signal<string>('');
+  sortDirection = signal<SortDirection>('');
   playersTabLabel = computed(() => `Players (${this.players().length})`)
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
@@ -242,12 +245,15 @@ export class AppComponent implements OnInit {
   }
 
   sortStats(event: Sort) {
-    console.log(`event`, event);
+    this.sortBy.set(event.active);
+    this.sortDirection.set(event.direction);
   }
 
   computeDataSource() {
     const players = this.players();
     const rounds = this.rounds();
+    const sortBy = this.sortBy();
+    const sortDirection = this.sortDirection();
 
     const decimalFormatter = new Intl.NumberFormat(this.language(), {
       maximumFractionDigits: 1,
@@ -265,7 +271,7 @@ export class AppComponent implements OnInit {
       style: 'percent',
     });
 
-    return players.map(player => {
+    const stats = players.map(player => {
       const playerRounds = rounds.filter(round => round.players.some(p => p.player.id === player.id));
       const matches = playerRounds.length;
       const wins = playerRounds.filter(round => round.winner?.player.id === player.id).length;
@@ -283,17 +289,86 @@ export class AppComponent implements OnInit {
         const roundPlayer = round.players.find(p => p.player === player);
         return roundPlayer && round.winner !== roundPlayer ? acc + roundPlayer.score : acc;
       }, 0);
+      const pointsPerMatch = matches > 0 ? points / matches : 0;
+      const pointsPerWin = wins > 0 ? winPoints / wins : 0;
+      const pointsPerLoss = losses > 0 ? losePoints / losses : 0;
 
       return {
         player,
-        matches: integerFormatter.format(matches),
-        wins: integerFormatter.format(wins),
-        points: integerFormatter.format(points),
-        pointsPerMatch: decimalFormatter.format(matches > 0 ? points / matches : 0),
-        winRate: percentFormatter.format(winRate),
-        pointsPerWin: decimalFormatter.format(wins > 0 ? winPoints / wins : 0),
-        pointsPerLoss: decimalFormatter.format(losses > 0 ? losePoints / losses : 0),
+        matches: {
+          value: matches,
+          formatted: integerFormatter.format(matches),
+        },
+        wins: {
+          value: wins,
+          formatted: integerFormatter.format(wins),
+        },
+        points: {
+          value: points,
+          formatted: integerFormatter.format(points),
+        },
+        pointsPerMatch: {
+          value: pointsPerMatch,
+          formatted: decimalFormatter.format(pointsPerMatch),
+        },
+        winRate: {
+          value: winRate,
+          formatted: percentFormatter.format(winRate),
+        },
+        pointsPerWin: {
+          value: pointsPerWin,
+          formatted: decimalFormatter.format(pointsPerWin),
+        },
+        pointsPerLoss: {
+          value: pointsPerLoss,
+          formatted: decimalFormatter.format(pointsPerLoss),
+        },
       }
     });
+
+    console.log(`sortBy`, sortBy);
+    console.log(`sortDirection`, sortDirection);
+
+    return sort(
+      stats,
+      'en',
+      [
+        (x) => {
+          switch (sortBy) {
+            case 'player': {
+              return x.player.name();
+            }
+            case 'matches': {
+              return x.matches.value;
+            }
+            case 'wins': {
+              return x.wins.value;
+            }
+            case 'points': {
+              return x.points.value;
+            }
+            case 'pointsPerMatch': {
+              return x.pointsPerMatch.value;
+            }
+            case 'winRate': {
+              return x.winRate.value;
+            }
+            case 'pointsPerWin': {
+              return x.pointsPerWin.value;
+            }
+            case 'pointsPerLoss': {
+              return x.pointsPerLoss.value;
+            }
+          }
+
+          return x.winRate.value;
+        },
+        (x) => x.pointsPerLoss.value
+      ],
+      [
+        sortDirection ? sortDirection : 'desc',
+        'desc'
+      ]
+    )
   }
 }

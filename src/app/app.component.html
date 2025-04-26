@@ -94,38 +94,38 @@
         </ng-container>
 
         <ng-container matColumnDef="matches">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="matches">Matches</th>
-          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.matches }}</td>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="matches" arrowPosition="before">Matches</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.matches.formatted }}</td>
         </ng-container>
 
         <ng-container matColumnDef="wins">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="wins">Wins</th>
-          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.wins }}</td>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="wins" arrowPosition="before">Wins</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.wins.formatted }}</td>
         </ng-container>
 
         <ng-container matColumnDef="winRate">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="winRate">Win rate</th>
-          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.winRate }}</td>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="winRate" arrowPosition="before">Win rate</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.winRate.formatted }}</td>
         </ng-container>
 
         <ng-container matColumnDef="points">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="points">Points</th>
-          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.points }}</td>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="points" arrowPosition="before">Points</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.points.formatted }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pointsPerMatch">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerMatch">PPM</th>
-          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerMatch }}</td>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerMatch" arrowPosition="before">PPM</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerMatch.formatted }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pointsPerWin">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerWin">PPW</th>
-          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerWin }}</td>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerWin" arrowPosition="before">PPW</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerWin.formatted }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pointsPerLoss">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerLoss">PPL</th>
-          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerLoss }}</td>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerLoss" arrowPosition="before">PPL</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerLoss.formatted }}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="statsColumns"></tr>
