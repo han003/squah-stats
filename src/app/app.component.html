@@ -86,45 +86,45 @@
 
   <mat-tab label="Statistics" [disabled]="insufficientPlayers()">
     <div class="tab-content stats">
-      <table mat-table [dataSource]="dataSource()">
+      <table mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortStats($event)">
 
         <ng-container matColumnDef="player" sticky>
-          <th mat-header-cell *matHeaderCellDef>Player</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="player">Player</th>
           <td mat-cell *matCellDef="let item"> {{ item.player.name() }}</td>
         </ng-container>
 
         <ng-container matColumnDef="matches">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef>Matches</th>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="matches">Matches</th>
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.matches }}</td>
         </ng-container>
 
         <ng-container matColumnDef="wins">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef>Wins</th>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="wins">Wins</th>
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.wins }}</td>
         </ng-container>
 
         <ng-container matColumnDef="winRate">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef>Win rate</th>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="winRate">Win rate</th>
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.winRate }}</td>
         </ng-container>
 
         <ng-container matColumnDef="points">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef>Points</th>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="points">Points</th>
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.points }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pointsPerMatch">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef>PPM</th>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerMatch">PPM</th>
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerMatch }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pointsPerWin">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef>PPW</th>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerWin">PPW</th>
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerWin }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pointsPerLoss">
-          <th class="number-cell" mat-header-cell *matHeaderCellDef>PPL</th>
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="pointsPerLoss">PPL</th>
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.pointsPerLoss }}</td>
         </ng-container>
 

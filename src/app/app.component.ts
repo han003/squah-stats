@@ -21,6 +21,7 @@ import { DateTime } from 'luxon';
 import { Session, SessionSaveData } from './session';
 import { MatAccordion, MatExpansionPanel, MatExpansionPanelActionRow, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
 import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog/confirm-dialog.component';
+import { MatSort, MatSortHeader, Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-root',
@@ -57,6 +58,8 @@ import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog/conf
     MatExpansionPanelTitle,
     MatExpansionPanelHeader,
     MatExpansionPanelActionRow,
+    MatSort,
+    MatSortHeader,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -236,6 +239,10 @@ export class AppComponent implements OnInit {
 
   loadSession(key: string) {
 
+  }
+
+  sortStats(event: Sort) {
+    console.log(`event`, event);
   }
 
   computeDataSource() {
