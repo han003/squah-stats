@@ -27,10 +27,21 @@ export function sort<Item>(items: Item[] = [], languageCode: string, functions: 
     for (const func of functionOrders) {
       const comp1 = func.order === 'asc' ? a : b;
       const comp2 = func.order === 'asc' ? b : a;
-      const result = collator.compare(func.function(comp1), func.function(comp2));
+      const value1 = func.function(comp1);
+      const value2 = func.function(comp2);
 
-      if (result !== 0) {
-        return result;
+      if (Number.isFinite(value1) && Number.isFinite(value2)) {
+        const result = value1 - value2;
+
+        if (result !== 0) {
+          return result;
+        }
+      } else {
+        const result = collator.compare(func.function(comp1), func.function(comp2));
+
+        if (result !== 0) {
+          return result;
+        }
       }
     }
 
