@@ -69,7 +69,7 @@ export class AppComponent implements OnInit {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
-  protected version = '0.1.0';
+  protected version = '0.1.1';
   session = signal(new Session(uuidv4()));
   sessions = signal<Session[]>([])
   selectedTabIndex = signal(0);
@@ -338,12 +338,9 @@ export class AppComponent implements OnInit {
       }
     });
 
-    console.log(`sortBy`, sortBy);
-    console.log(`sortDirection`, sortDirection);
-
     return sort(
       stats,
-      'en',
+      navigator.language,
       [
         (x) => {
           const defaultSortValue = x.winRate.value;
