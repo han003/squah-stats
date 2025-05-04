@@ -1,6 +1,7 @@
 # SquashStats
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.0.
+## Webpage
+https://main.d2a2ecphxt5f1q.amplifyapp.com/
 
 ## Development server
 
