@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>Add round</h2>
 
-<mat-dialog-content>
+<div id="content">
   <mat-selection-list multiple>
     @for (player of players(); track player.player.id()) {
       <mat-list-option [value]="player" [disabled]="player.disabled()" [(selected)]="player.selected">{{player.player.name()}}</mat-list-option>
@@ -15,19 +15,19 @@
     <div class="score-block-container">
       <span class="score-block-label">{{player.player.name()}}</span>
       <div class="score-block">
-        <button matIconButton aria-label="Subtract" (click)="updateScore(player, -1)" [disabled]="player.score() === minScore">
+        <button matIconButton aria-label="Subtract" (click)="updateScore(player, -1)" [disabled]="player.score() === minScore || player.player.name() === mockPlayerName">
           <mat-icon>remove</mat-icon>
         </button>
 
         <span class="score">{{player.score()}}</span>
 
-        <button matIconButton aria-label="Add" (click)="updateScore(player, 1)" [disabled]="player.score() === maxScore">
+        <button matIconButton aria-label="Add" (click)="updateScore(player, 1)" [disabled]="player.score() === maxScore || player.player.name() === mockPlayerName">
           <mat-icon>add</mat-icon>
         </button>
       </div>
     </div>
   }
-</mat-dialog-content>
+</div>
 
 <mat-dialog-actions>
   <button mat-button [matDialogClose]="null">Cancel</button>

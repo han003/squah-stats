@@ -1,5 +1,5 @@
 :host {
-  mat-dialog-content {
+  #content {
     display: grid;
     grid-gap: 16px;
 
@@ -17,10 +17,12 @@
         grid-template-columns: auto 1fr auto;
         gap: 8px;
         align-items: center;
+        padding: 2px 8px;
+        box-sizing: border-box;
 
         .score {
           text-align: center;
-          font: var(--mat-sys-title-large);
+          font: var(--mat-sys-headline-medium);
         }
       }
     }

@@ -1,5 +1,5 @@
 import { signal, WritableSignal } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 
 export interface PlayerSaveData {
   id: string
@@ -12,7 +12,7 @@ export class Player {
 
   constructor(name: string, extra?: { id: string }) {
     this.name = signal(name);
-    this.id = signal(extra?.id || uuidv4());
+    this.id = signal(extra?.id || uuid());
   }
 
   toString() {
