@@ -21,7 +21,6 @@ interface AddRoundPlayer {
   selector: 'app-add-round-dialog',
   imports: [
     MatDialogTitle,
-    MatDialogContent,
     MatDialogActions,
     MatButton,
     MatDialogClose,
@@ -40,6 +39,7 @@ export class AddRoundDialogComponent {
   readonly mockPlayerName = '—';
   players = signal<AddRoundPlayer[]>([]);
   selectedPlayers = computed(() => {
+    let mockId = 1;
     const selectedPlayers = this.players().filter(p => p.selected());
 
     return Array.from<AddRoundPlayer>({length: 2}).fill({
@@ -47,7 +47,12 @@ export class AddRoundDialogComponent {
       selected: signal(false),
       disabled: signal(false),
       score: signal(0),
-    }).map((player, i) => selectedPlayers.at(i) || player)
+    }).map((_, i) => selectedPlayers.at(i) || {
+      player: new Player(this.mockPlayerName),
+      selected: signal(false),
+      disabled: signal(false),
+      score: signal(0),
+    })
   });
   round = computed(() => {
     const players = this.selectedPlayers();
