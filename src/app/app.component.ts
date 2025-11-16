@@ -69,7 +69,7 @@ export class AppComponent implements OnInit {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
-  protected version = '0.1.1';
+  protected version = '0.1.2';
   session = signal(new Session(uuidv4()));
   sessions = signal<Session[]>([])
   selectedTabIndex = signal(0);
@@ -82,7 +82,7 @@ export class AppComponent implements OnInit {
   playersTabLabel = computed(() => `Players (${this.players().length})`)
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
-  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
+  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'diff', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
   newPlayerControl = new FormControl<string | null>(null);
   sessionNameControl = new FormControl<string | null>(null);
 
@@ -284,6 +284,7 @@ export class AppComponent implements OnInit {
     });
 
     const stats = players.map(player => {
+      console.log(`player`, player.name());
       const playerRounds = rounds.filter(round => round.players.some(p => p.player.id === player.id));
       const matches = playerRounds.length;
       const wins = playerRounds.filter(round => round.winner?.player.id === player.id).length;
@@ -301,9 +302,22 @@ export class AppComponent implements OnInit {
         const roundPlayer = round.players.find(p => p.player === player);
         return roundPlayer && round.winner !== roundPlayer ? acc + roundPlayer.score : acc;
       }, 0);
+      const diff = playerRounds.reduce((acc, round) => {
+        const roundPlayer = round.players.find(p => p.player === player);
+        const diff = Math.abs(round.players[0].score - round.players[1].score);
+        if (round.winner === roundPlayer) {
+          acc += diff;
+        } else {
+          acc -= diff;
+        }
+
+        return acc;
+      }, 0);
       const pointsPerMatch = matches > 0 ? points / matches : 0;
       const pointsPerWin = wins > 0 ? winPoints / wins : 0;
       const pointsPerLoss = losses > 0 ? losePoints / losses : 0;
+
+      console.log(`diff`, diff);
 
       return {
         player,
@@ -326,6 +340,10 @@ export class AppComponent implements OnInit {
         winRate: {
           value: winRate,
           formatted: percentFormatter.format(winRate),
+        },
+        diff: {
+          value: diff,
+          formatted: integerFormatter.format(diff),
         },
         pointsPerWin: {
           value: pointsPerWin,
