@@ -23,6 +23,7 @@ import { MatAccordion, MatExpansionPanel, MatExpansionPanelActionRow, MatExpansi
 import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog/confirm-dialog.component';
 import { MatSort, MatSortHeader, Sort, SortDirection } from '@angular/material/sort';
 import { sort } from './shared/sort';
+import { StartingOrderDialogComponent, StartingOrderDialogData } from './starting-order-dialog/starting-order-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -235,6 +236,21 @@ export class AppComponent implements OnInit {
 
   addRound() {
     this.matDialog.open<AddRoundDialogComponent, AddRoundDialogData, Round>(AddRoundDialogComponent, {
+      disableClose: true,
+      data: {
+        players: this.players,
+      }
+    }).afterClosed().pipe(
+      filter(round => round != null),
+    ).subscribe(round => {
+      this.rounds.update(r => {
+        return [round, ...r];
+      })
+    })
+  }
+
+  selectStartingOrder() {
+    this.matDialog.open<StartingOrderDialogComponent, StartingOrderDialogData>(StartingOrderDialogComponent, {
       disableClose: true,
       data: {
         players: this.players,

@@ -49,6 +49,10 @@
 
   <mat-tab [label]="roundsTabLabel()" [disabled]="insufficientPlayers()">
     <div class="tab-content rounds">
+      @if (!rounds().length) {
+        <button matButton="tonal" (click)="selectStartingOrder()">Select starting order</button>
+      }
+
       <button mat-flat-button (click)="addRound()">Add round</button>
 
       <div id="rounds-list">

@@ -1,4 +1,10 @@
+@use '@angular/material' as mat;
+
 :host {
+  @include mat.list-overrides((
+    list-item-focus-state-layer-opacity: 0,
+  ));
+
   #content {
     display: grid;
     grid-gap: 16px;

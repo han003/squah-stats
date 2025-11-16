@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal, Signal, WritableSignal } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { Player } from '../player';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatDivider, MatListOption, MatSelectionList } from '@angular/material/list';
@@ -39,7 +39,6 @@ export class AddRoundDialogComponent {
   readonly mockPlayerName = '—';
   players = signal<AddRoundPlayer[]>([]);
   selectedPlayers = computed(() => {
-    let mockId = 1;
     const selectedPlayers = this.players().filter(p => p.selected());
 
     return Array.from<AddRoundPlayer>({length: 2}).fill({

@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Starting order</h2>
+
+<mat-dialog-content>
+  @for (group of groupedPlayers(); track group) {
+    <mat-card>
+      @for (player of group; track player) {
+        <span>{{player}}</span>
+      }
+    </mat-card>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button mat-button [matDialogClose]="">Close</button>
+</mat-dialog-actions>
