@@ -30,7 +30,7 @@
       </div>
 
       <mat-list>
-        @for (player of players(); track player.id) {
+        @for (player of players(); track player.id()) {
           <mat-list-item>
             <span matListItemTitle >{{ $index + 1 }}. {{ player.name() }}</span>
 
@@ -55,17 +55,17 @@
         @for (round of rounds(); track round.createdAt) {
           <div class="round">
             <span class="players">
-              @for (player of round.players; track player.player.id) {
+              @for (player of round.players; track player.player.id()) {
                 <span>{{ player.player.name() }}</span>
 
                 @if (!$last) {
-                  <span> vs </span>
+                  <span class="versus">vs.</span>
                 }
               }
              </span>
 
             <span class="score">
-                @for (player of round.players; track player.player.id) {
+                @for (player of round.players; track player.player.id()) {
                   <span>{{ player.score }}</span>
 
                   @if (!$last) {
@@ -74,7 +74,7 @@
                 }
              </span>
 
-            <div class="time">{{ round.createdAtTimeString() }}</div>
+            <span class="time">{{ round.createdAtTimeString }}</span>
           </div>
 
 
@@ -115,6 +115,11 @@
         <ng-container matColumnDef="points">
           <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="points" arrowPosition="before">Points</th>
           <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.points.formatted }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="diff">
+          <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="diff" arrowPosition="before">Diff</th>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.diff.formatted }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pointsPerMatch">

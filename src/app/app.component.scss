@@ -1,3 +1,5 @@
+@use '@angular/material' as mat;
+
 :host {
   ::ng-deep .mat-mdc-tab-body-content {
     display: grid;
@@ -36,9 +38,17 @@
             align-items: center;
             padding: 16px 0;
 
+            .versus, .time {
+              opacity: 0.7;
+              font: var(--mat-sys-body-small);
+            }
+
             .players {
+              display: flex;
+              align-items: baseline;
               grid-area: players;
               font: var(--mat-sys-body-large);
+              gap: 4px;
             }
 
             .score {
@@ -49,7 +59,6 @@
 
             .time {
               grid-area: time;
-              font: var(--mat-sys-body-medium);
             }
           }
         }

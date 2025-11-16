@@ -69,7 +69,7 @@ export class AppComponent implements OnInit {
   private matSnackBar = inject(MatSnackBar)
   private matDialog = inject(MatDialog)
 
-  protected version = '0.1.1';
+  protected version = '0.1.2';
   session = signal(new Session(uuidv4()));
   sessions = signal<Session[]>([])
   selectedTabIndex = signal(0);
@@ -82,7 +82,7 @@ export class AppComponent implements OnInit {
   playersTabLabel = computed(() => `Players (${this.players().length})`)
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
-  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
+  statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'diff', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
   newPlayerControl = new FormControl<string | null>(null);
   sessionNameControl = new FormControl<string | null>(null);
 
@@ -120,8 +120,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(Object.entries(localStorage));
-
     const sessions = Object.entries(localStorage).reduce((acc, [key, value]) => {
       const id = this.extractSessionKey(key);
       acc.set(id, this.getSessionData(id).session);
@@ -148,7 +146,6 @@ export class AppComponent implements OnInit {
   }
 
   getSessionData(sessionKey: string) {
-    console.log(`getSessionData`, sessionKey);
     const players: Player[] = [];
     const rounds: Round[] = [];
     const session: Session = new Session(sessionKey);
@@ -283,6 +280,12 @@ export class AppComponent implements OnInit {
       style: 'percent',
     });
 
+    const diffFormatter = new Intl.NumberFormat(this.language(), {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+      signDisplay: 'exceptZero',
+    });
+
     const stats = players.map(player => {
       const playerRounds = rounds.filter(round => round.players.some(p => p.player.id === player.id));
       const matches = playerRounds.length;
@@ -300,6 +303,24 @@ export class AppComponent implements OnInit {
       const losePoints = playerRounds.reduce((acc, round) => {
         const roundPlayer = round.players.find(p => p.player === player);
         return roundPlayer && round.winner !== roundPlayer ? acc + roundPlayer.score : acc;
+      }, 0);
+      const diff = playerRounds.reduce((acc, round) => {
+        const roundPlayer = round.players.find(p => p.player === player);
+        const player1 = round.players[0];
+        const player2 = round.players[1];
+
+        if (!(player1 && player2)) {
+          return acc;
+        }
+
+        const diff = Math.abs(player1.score - player2.score);
+        if (round.winner === roundPlayer) {
+          acc += diff;
+        } else {
+          acc -= diff;
+        }
+
+        return acc;
       }, 0);
       const pointsPerMatch = matches > 0 ? points / matches : 0;
       const pointsPerWin = wins > 0 ? winPoints / wins : 0;
@@ -326,6 +347,10 @@ export class AppComponent implements OnInit {
         winRate: {
           value: winRate,
           formatted: percentFormatter.format(winRate),
+        },
+        diff: {
+          value: diff,
+          formatted: diffFormatter.format(diff),
         },
         pointsPerWin: {
           value: pointsPerWin,
@@ -361,6 +386,9 @@ export class AppComponent implements OnInit {
             case 'points': {
               return x.points.value;
             }
+            case 'diff': {
+              return x.diff.value;
+            }
             case 'pointsPerMatch': {
               return x.pointsPerMatch.value;
             }
@@ -377,7 +405,7 @@ export class AppComponent implements OnInit {
 
           return defaultSortValue;
         },
-        (x) => x.pointsPerLoss.value
+        (x) => x.diff.value
       ],
       [
         sortDirection ? sortDirection : 'desc',

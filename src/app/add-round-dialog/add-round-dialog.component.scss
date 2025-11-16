@@ -3,9 +3,26 @@
     display: grid;
     grid-gap: 16px;
 
-    form, .subform {
-      display: grid;
-      grid-gap: 16px;
+    .score-block-container {
+      display: flex;
+      flex-direction: column;
+
+      .score-block-label {
+        font: var(--mat-sys-label-small);
+        text-align: center;
+      }
+
+      .score-block {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 8px;
+        align-items: center;
+
+        .score {
+          text-align: center;
+          font: var(--mat-sys-title-large);
+        }
+      }
     }
   }
 }
