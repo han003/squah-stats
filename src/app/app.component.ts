@@ -120,8 +120,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(Object.entries(localStorage));
-
     const sessions = Object.entries(localStorage).reduce((acc, [key, value]) => {
       const id = this.extractSessionKey(key);
       acc.set(id, this.getSessionData(id).session);
@@ -148,7 +146,6 @@ export class AppComponent implements OnInit {
   }
 
   getSessionData(sessionKey: string) {
-    console.log(`getSessionData`, sessionKey);
     const players: Player[] = [];
     const rounds: Round[] = [];
     const session: Session = new Session(sessionKey);
@@ -283,8 +280,13 @@ export class AppComponent implements OnInit {
       style: 'percent',
     });
 
+    const diffFormatter = new Intl.NumberFormat(this.language(), {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+      signDisplay: 'exceptZero',
+    });
+
     const stats = players.map(player => {
-      console.log(`player`, player.name());
       const playerRounds = rounds.filter(round => round.players.some(p => p.player.id === player.id));
       const matches = playerRounds.length;
       const wins = playerRounds.filter(round => round.winner?.player.id === player.id).length;
@@ -317,8 +319,6 @@ export class AppComponent implements OnInit {
       const pointsPerWin = wins > 0 ? winPoints / wins : 0;
       const pointsPerLoss = losses > 0 ? losePoints / losses : 0;
 
-      console.log(`diff`, diff);
-
       return {
         player,
         matches: {
@@ -343,7 +343,7 @@ export class AppComponent implements OnInit {
         },
         diff: {
           value: diff,
-          formatted: integerFormatter.format(diff),
+          formatted: diffFormatter.format(diff),
         },
         pointsPerWin: {
           value: pointsPerWin,
@@ -379,6 +379,9 @@ export class AppComponent implements OnInit {
             case 'points': {
               return x.points.value;
             }
+            case 'diff': {
+              return x.diff.value;
+            }
             case 'pointsPerMatch': {
               return x.pointsPerMatch.value;
             }
@@ -395,7 +398,7 @@ export class AppComponent implements OnInit {
 
           return defaultSortValue;
         },
-        (x) => x.pointsPerLoss.value
+        (x) => x.diff.value
       ],
       [
         sortDirection ? sortDirection : 'desc',

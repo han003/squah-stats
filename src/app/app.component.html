@@ -119,7 +119,7 @@
 
         <ng-container matColumnDef="diff">
           <th class="number-cell" mat-header-cell *matHeaderCellDef mat-sort-header="diff" arrowPosition="before">Diff</th>
-          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.diff.value }}</td>
+          <td class="number-cell" mat-cell *matCellDef="let item"> {{ item.diff.formatted }}</td>
         </ng-container>
 
         <ng-container matColumnDef="pointsPerMatch">
