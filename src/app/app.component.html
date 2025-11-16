@@ -30,7 +30,7 @@
       </div>
 
       <mat-list>
-        @for (player of players(); track player.id) {
+        @for (player of players(); track player.id()) {
           <mat-list-item>
             <span matListItemTitle >{{ $index + 1 }}. {{ player.name() }}</span>
 
@@ -52,10 +52,10 @@
       <button mat-flat-button (click)="addRound()">Add round</button>
 
       <div id="rounds-list">
-        @for (round of rounds(); track round.createdAt) {
+        @for (round of rounds(); track round.createdAt()) {
           <div class="round">
             <span class="players">
-              @for (player of round.players; track player.player.id) {
+              @for (player of round.players; track player.player.id()) {
                 <span>{{ player.player.name() }}</span>
 
                 @if (!$last) {
@@ -65,7 +65,7 @@
              </span>
 
             <span class="score">
-                @for (player of round.players; track player.player.id) {
+                @for (player of round.players; track player.player.id()) {
                   <span>{{ player.score }}</span>
 
                   @if (!$last) {
