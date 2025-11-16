@@ -59,7 +59,7 @@
                 <span>{{ player.player.name() }}</span>
 
                 @if (!$last) {
-                  <span> vs </span>
+                  <span class="versus">vs.</span>
                 }
               }
              </span>
@@ -74,7 +74,7 @@
                 }
              </span>
 
-            <div class="time">{{ round.createdAtTimeString }}</div>
+            <span class="time">{{ round.createdAtTimeString }}</span>
           </div>
 
 
