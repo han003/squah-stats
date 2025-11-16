@@ -1,12 +1,5 @@
 @use '@angular/material' as mat;
 
-:root {
-  @include mat.dialog-overrides((
-    container-max-width: 95vw,
-    container-small-max-width: 95vw,
-  ));
-}
-
 :host {
   ::ng-deep .mat-mdc-tab-body-content {
     display: grid;

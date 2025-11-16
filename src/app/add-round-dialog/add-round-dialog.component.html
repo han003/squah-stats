@@ -1,54 +1,35 @@
 <h2 mat-dialog-title>Add round</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form">
-    <div class="subform" formGroupName="player1">
-      <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
-        <mat-label>Player 1</mat-label>
-        <mat-select formControlName="player">
-          @for (player of players(); track player.id()) {
-            <mat-option [value]="player" [disabled]="form.controls.player2.controls.player.value?.id === player.id">{{player.name()}}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+  <mat-selection-list multiple>
+    @for (player of players(); track player.player.id()) {
+      <mat-list-option [value]="player" [disabled]="player.disabled()" [(selected)]="player.selected">{{player.player.name()}}</mat-list-option>
+    }
+  </mat-selection-list>
 
-      <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
-        @let player1 = form.controls.player1.controls.player.value;
-        @if (player1) {
-          <mat-label>{{player1.name()}} score</mat-label>
-        } @else {
-          <mat-label>Player 1 score</mat-label>
-        }
+  @if (selectedPlayers().length) {
+    <mat-divider/>
+  }
 
-        <input matInput type="number" min="0" max="100" step="1" inputmode="numeric" formControlName="score">
-      </mat-form-field>
+  @for (player of selectedPlayers(); track player.player.id()) {
+    <div class="score-block-container">
+      <span class="score-block-label">{{player.player.name()}}</span>
+      <div class="score-block">
+        <button matIconButton aria-label="Subtract" (click)="updateScore(player, -1)" [disabled]="player.score() === minScore">
+          <mat-icon>remove</mat-icon>
+        </button>
+
+        <span class="score">{{player.score()}}</span>
+
+        <button matIconButton aria-label="Add" (click)="updateScore(player, 1)" [disabled]="player.score() === maxScore">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
     </div>
-
-    <div class="subform" formGroupName="player2">
-      <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
-        <mat-label>Player 2</mat-label>
-        <mat-select formControlName="player">
-          @for (player of players(); track player.id()) {
-            <mat-option [value]="player" [disabled]="form.controls.player1.controls.player.value?.id === player.id">{{player.name()}}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field subscriptSizing="dynamic" hideRequiredMarker>
-        @let player2 = form.controls.player2.controls.player.value;
-        @if (player2) {
-          <mat-label>{{player2.name()}} score</mat-label>
-        } @else {
-          <mat-label>Player 2 score</mat-label>
-        }
-
-        <input matInput type="number" min="0" max="100" step="1" inputmode="numeric" formControlName="score">
-      </mat-form-field>
-    </div>
-  </form>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions>
   <button mat-button [matDialogClose]="null">Cancel</button>
-  <button mat-button type="submit" (click)="addRound()" [disabled]="form.invalid">Add round</button>
+  <button mat-button type="submit" (click)="addRound()" [disabled]="!round()">Add round</button>
 </mat-dialog-actions>

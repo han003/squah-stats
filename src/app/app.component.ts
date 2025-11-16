@@ -306,7 +306,14 @@ export class AppComponent implements OnInit {
       }, 0);
       const diff = playerRounds.reduce((acc, round) => {
         const roundPlayer = round.players.find(p => p.player === player);
-        const diff = Math.abs(round.players[0].score - round.players[1].score);
+        const player1 = round.players[0];
+        const player2 = round.players[1];
+
+        if (!(player1 && player2)) {
+          return acc;
+        }
+
+        const diff = Math.abs(player1.score - player2.score);
         if (round.winner === roundPlayer) {
           acc += diff;
         } else {

@@ -52,7 +52,7 @@
       <button mat-flat-button (click)="addRound()">Add round</button>
 
       <div id="rounds-list">
-        @for (round of rounds(); track round.createdAt()) {
+        @for (round of rounds(); track round.createdAt) {
           <div class="round">
             <span class="players">
               @for (player of round.players; track player.player.id()) {
@@ -74,7 +74,7 @@
                 }
              </span>
 
-            <div class="time">{{ round.createdAtTimeString() }}</div>
+            <div class="time">{{ round.createdAtTimeString }}</div>
           </div>
 
 
