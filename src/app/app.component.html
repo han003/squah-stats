@@ -90,6 +90,20 @@
     </div>
   </mat-tab>
 
+  <mat-tab label="Matchups" [disabled]="insufficientPlayers()">
+    <div class="tab-content matchups">
+      <mat-form-field id="match-select">
+        <mat-label>Matchup</mat-label>
+        <mat-select>
+          @for (matchup of matchups(); track matchup.id) {
+            <mat-option [value]="matchup.id">{{matchup.player1.name()}} — {{matchup.player2.name()}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </mat-tab>
+
+
   <mat-tab label="Statistics" [disabled]="insufficientPlayers()">
     <div class="tab-content stats">
       <table [class.default-sort]="isDefaultSort() && rounds().length" mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortStats($event)">

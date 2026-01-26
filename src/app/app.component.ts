@@ -24,6 +24,8 @@ import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog/conf
 import { MatSort, MatSortHeader, Sort, SortDirection } from '@angular/material/sort';
 import { sort } from './shared/sort';
 import { StartingOrderDialogComponent, StartingOrderDialogData } from './starting-order-dialog/starting-order-dialog.component';
+import { Matchup } from './matchup';
+import { MatOption, MatSelect } from '@angular/material/select';
 
 @Component({
   selector: 'app-root',
@@ -62,6 +64,8 @@ import { StartingOrderDialogComponent, StartingOrderDialogData } from './startin
     MatExpansionPanelActionRow,
     MatSort,
     MatSortHeader,
+    MatSelect,
+    MatOption,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -76,6 +80,7 @@ export class AppComponent implements OnInit {
   selectedTabIndex = signal(0);
   language = signal(navigator.language);
   players = signal<Player[]>([]);
+  matchups = computed(this.computeMatchups.bind(this));
   rounds = signal<Round[]>([]);
   sortBy = signal<string>('');
   sortDirection = signal<SortDirection>('');
@@ -146,6 +151,26 @@ export class AppComponent implements OnInit {
     return `session-${session}-rounds`;
   }
 
+  private computeMatchups() {
+    const players = this.players();
+    const matchups = new Map<string, Matchup>();
+
+    players.forEach(p1 => {
+      players.forEach(p2 => {
+        if (p1.id() === p2.id()) {
+          return;
+        }
+
+        const matchupKey = Matchup.createId(p1, p2);
+        if (!matchups.has(matchupKey)) {
+          matchups.set(matchupKey, new Matchup(p1, p2));
+        }
+      })
+    })
+
+    return Array.from(matchups.values());
+  }
+
   getSessionData(sessionKey: string) {
     const players: Player[] = [];
     const rounds: Round[] = [];
@@ -192,6 +217,7 @@ export class AppComponent implements OnInit {
     this.sessions.update(sessions => [...sessions, session]);
     this.players.set([]);
     this.rounds.set([]);
+    this.selectedTabIndex.set(0);
 
     this.matSnackBar.open('New session started');
   }

@@ -120,6 +120,14 @@
           text-align: right;
         }
       }
+
+      &.matchups {
+        display: grid;
+
+        #match-select {
+          width: 100%
+        }
+      }
     }
   }
 }
