@@ -9,7 +9,7 @@
 <mat-menu #menu="matMenu">
   <button mat-menu-item (click)="newSession()">New session</button>
   <mat-divider></mat-divider>
-  <button mat-menu-item disabled>version {{version}}</button>
+  <button mat-menu-item disabled>version {{ version }}</button>
 </mat-menu>
 
 <mat-tab-group (selectedIndexChange)="tabChange($event)" [selectedIndex]="selectedTabIndex()">
@@ -32,7 +32,7 @@
       <mat-list>
         @for (player of players(); track player.id()) {
           <mat-list-item>
-            <span matListItemTitle >{{ $index + 1 }}. {{ player.name() }}</span>
+            <span matListItemTitle>{{ $index + 1 }}. {{ player.name() }}</span>
 
             <button mat-icon-button (click)="removePlayer(player)" matListItemMeta>
               <mat-icon>delete</mat-icon>
@@ -94,12 +94,27 @@
     <div class="tab-content matchups">
       <mat-form-field id="match-select">
         <mat-label>Matchup</mat-label>
-        <mat-select>
+        <mat-select [(ngModel)]="selectedMatchup">
           @for (matchup of matchups(); track matchup.id) {
-            <mat-option [value]="matchup.id">{{matchup.player1.name()}} — {{matchup.player2.name()}}</mat-option>
+            <mat-option [value]="matchup">{{ matchup.player1.name() }} — {{ matchup.player2.name() }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
+
+      @let matchup = selectedMatchup();
+      @if (matchup) {
+        <div class="matchup-details">
+          <div id="score">
+            <span class="player1 name">{{ matchup.player1.name() }}</span>
+            <span class="player1 points">{{ matchup.player1Wins() }}</span>
+            <span>vs.</span>
+            <span class="player2 name">{{ matchup.player2.name() }}</span>
+            <span class="player2 points">{{ matchup.player2Wins() }}</span>
+          </div>
+        </div>
+      } @else {
+        <p>Please select a matchup to see details.</p>
+      }
     </div>
   </mat-tab>
 
@@ -168,7 +183,7 @@
         @for (session of sessions(); track session.key) {
           <mat-expansion-panel>
             <mat-expansion-panel-header>
-              <mat-panel-title>{{session.name() || session.key}}</mat-panel-title>
+              <mat-panel-title>{{ session.name() || session.key }}</mat-panel-title>
             </mat-expansion-panel-header>
 
             <p>This is the primary content of the panel.</p>

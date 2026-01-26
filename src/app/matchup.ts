@@ -8,6 +8,8 @@ export class Matchup {
   player2: Player;
   rounds = signal<Round[]>([]);
   roundCount = computed(() => this.rounds().length);
+  player1Wins = computed(() => this.rounds().filter(r => r.winner?.player === this.player1).length);
+  player2Wins = computed(() => this.rounds().filter(r => r.winner?.player === this.player2).length);
 
   constructor(player1: Player, player2: Player) {
     this.player1 = player1;
