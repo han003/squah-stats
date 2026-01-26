@@ -87,7 +87,7 @@
 
       &.matchups {
         display: grid;
-        grid-gap: 16px;
+        grid-gap: 24px;
 
         #match-select {
           width: 100%
@@ -130,7 +130,7 @@
 
           .versus {
             grid-area: versus;
-            font: var(--mat-sys-display-small);
+            font: var(--mat-sys-headline-small);
           }
         }
       }

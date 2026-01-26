@@ -68,6 +68,9 @@
             <mat-option [value]="matchup">{{ matchup.player1.name() }} — {{ matchup.player2.name() }}</mat-option>
           }
         </mat-select>
+        @if (!selectedMatchup()) {
+          <mat-hint>Please select a matchup to see details.</mat-hint>
+        }
       </mat-form-field>
 
       @let matchup = selectedMatchup();
@@ -81,8 +84,6 @@
         </div>
 
         <app-rounds-list [rounds]="matchup.rounds()"/>
-      } @else {
-        <p>Please select a matchup to see details.</p>
       }
     </div>
   </mat-tab>

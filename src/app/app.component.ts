@@ -4,7 +4,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { Player, PlayerSaveData } from './player';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatList, MatListItem, MatListItemMeta } from '@angular/material/list';
 import { MatDivider } from '@angular/material/divider';
@@ -70,6 +70,7 @@ import { RoundsListComponent } from './rounds-list/rounds-list.component';
     MatOption,
     FormsModule,
     RoundsListComponent,
+    MatHint,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -95,14 +96,14 @@ export class AppComponent implements OnInit {
   selectedMatchup = signal<Matchup | null>(null);
   statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'diff', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
   newPlayerControl = new FormControl<string | null>(null);
-  sessionNameControl = new FormControl<string | null>(null);
+  sessionNameControl = new FormControl<string | null>(DateTime.now().toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY));
 
   dataSource = computed(this.computeDataSource.bind(this));
 
   constructor() {
     const url = new URL(window.location.href);
     const sessionKey = url.searchParams.get('session') || this.session().key;
-    const initialTab = parseInt(String(url.searchParams.get('tab')));
+    const initialTab = this.insufficientPlayers() ? 0 : parseInt(String(url.searchParams.get('tab')));
     this.selectedTabIndex.set(Number.isFinite(initialTab) ? initialTab : 0);
 
     // const {session, players} = this.getSessionData(sessionKey);
@@ -121,10 +122,6 @@ export class AppComponent implements OnInit {
       url.searchParams.set('session', this.session().key);
       window.history.pushState({}, '', url.toString());
     })
-
-    effect(() => {
-      console.log(`this.selectedMatchup()`, this.selectedMatchup());
-    })
   }
 
   ngOnInit() {
@@ -136,7 +133,7 @@ export class AppComponent implements OnInit {
     //
     // this.sessions.set(Array.from(sessions.values()));
 
-    this.mock();
+    // this.mock();
   }
 
   private mock() {
