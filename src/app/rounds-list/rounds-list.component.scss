@@ -1,0 +1,35 @@
+:host {
+  display: grid;
+
+  .round {
+    display: grid;
+    grid-template-areas: 'players score' 'time score';
+    row-gap: 2px;
+    column-gap: 16px;
+    align-items: center;
+    padding: 16px 0;
+
+    .versus, .time {
+      opacity: 0.7;
+      font: var(--mat-sys-body-small);
+    }
+
+    .players {
+      display: flex;
+      align-items: baseline;
+      grid-area: players;
+      font: var(--mat-sys-body-large);
+      gap: 4px;
+    }
+
+    .score {
+      grid-area: score;
+      font: var(--mat-sys-title-large);
+      text-align: right;
+    }
+
+    .time {
+      grid-area: time;
+    }
+  }
+}

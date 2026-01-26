@@ -55,38 +55,7 @@
 
       <button mat-flat-button (click)="addRound()">Add round</button>
 
-      <div id="rounds-list">
-        @for (round of rounds(); track round.createdAt) {
-          <div class="round">
-            <span class="players">
-              @for (player of round.players; track player.player.id()) {
-                <span>{{ player.player.name() }}</span>
-
-                @if (!$last) {
-                  <span class="versus">vs.</span>
-                }
-              }
-             </span>
-
-            <span class="score">
-                @for (player of round.players; track player.player.id()) {
-                  <span>{{ player.score }}</span>
-
-                  @if (!$last) {
-                    <span> — </span>
-                  }
-                }
-             </span>
-
-            <span class="time">{{ round.createdAtTimeString }}</span>
-          </div>
-
-
-          @if (!$last) {
-            <mat-divider></mat-divider>
-          }
-        }
-      </div>
+      <app-rounds-list [rounds]="rounds()"/>
     </div>
   </mat-tab>
 
@@ -110,6 +79,8 @@
           <span class="player2 name">{{ matchup.player2.name() }}</span>
           <span class="player2 wins">{{ matchup.player2Wins() }}</span>
         </div>
+
+        <app-rounds-list [rounds]="matchup.rounds()"/>
       } @else {
         <p>Please select a matchup to see details.</p>
       }

@@ -1,0 +1,30 @@
+@for (round of rounds(); track round.createdAt) {
+  <div class="round">
+            <span class="players">
+              @for (player of round.players; track player.player.id()) {
+                <span>{{ player.player.name() }}</span>
+
+                @if (!$last) {
+                  <span class="versus">vs.</span>
+                }
+              }
+             </span>
+
+    <span class="score">
+                @for (player of round.players; track player.player.id()) {
+                  <span>{{ player.score }}</span>
+
+                  @if (!$last) {
+                    <span> — </span>
+                  }
+                }
+             </span>
+
+    <span class="time">{{ round.createdAtTimeString }}</span>
+  </div>
+
+
+  @if (!$last) {
+    <mat-divider/>
+  }
+}

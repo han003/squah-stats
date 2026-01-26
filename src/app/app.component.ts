@@ -27,6 +27,7 @@ import { StartingOrderDialogComponent, StartingOrderDialogData } from './startin
 import { Matchup } from './matchup';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { random } from 'lodash-es';
+import { RoundsListComponent } from './rounds-list/rounds-list.component';
 
 @Component({
   selector: 'app-root',
@@ -68,6 +69,7 @@ import { random } from 'lodash-es';
     MatSelect,
     MatOption,
     FormsModule,
+    RoundsListComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
