@@ -81,11 +81,11 @@ export class AppComponent implements OnInit {
   language = signal(navigator.language);
   players = signal<Player[]>([]);
   matchups = computed(this.computeMatchups.bind(this));
-  rounds = signal<Round[]>([]);
   sortBy = signal<string>('');
   sortDirection = signal<SortDirection>('');
   isDefaultSort = computed(() => !this.sortDirection());
   playersTabLabel = computed(() => `Players (${this.players().length})`)
+  rounds = computed(() => this.matchups().reduce<Round[]>((acc, m) => acc.concat(m.rounds()), []));
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
   statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'diff', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
@@ -100,9 +100,8 @@ export class AppComponent implements OnInit {
     const initialTab = parseInt(String(url.searchParams.get('tab')));
     this.selectedTabIndex.set(Number.isFinite(initialTab) ? initialTab : 0);
 
-    const {session, players, rounds} = this.getSessionData(sessionKey);
+    const {session, players} = this.getSessionData(sessionKey);
     this.players.set(players);
-    this.rounds.set(rounds);
     this.session.set(session);
 
     this.sessionNameControl.setValue(session.name());
@@ -121,7 +120,6 @@ export class AppComponent implements OnInit {
     effect(() => {
       localStorage.setItem(this.getSessionKey(this.session().key), btoa(this.session().toString()));
       localStorage.setItem(this.getPlayersSessionKey(this.session().key), btoa(JSON.stringify(this.players().map(p => p.toString()))));
-      localStorage.setItem(this.getRoundsSessionKey(this.session().key), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
     })
   }
 
@@ -216,7 +214,6 @@ export class AppComponent implements OnInit {
     this.session.set(session);
     this.sessions.update(sessions => [...sessions, session]);
     this.players.set([]);
-    this.rounds.set([]);
     this.selectedTabIndex.set(0);
 
     this.matSnackBar.open('New session started');
@@ -269,9 +266,11 @@ export class AppComponent implements OnInit {
     }).afterClosed().pipe(
       filter(round => round != null),
     ).subscribe(round => {
-      this.rounds.update(r => {
-        return [round, ...r];
-      })
+      const matchupId = Matchup.createId(round.players[0]?.player, round.players[1]?.player);
+      const matchup = this.matchups().find(m => m.id === matchupId);
+      if (matchup) {
+        matchup.addRound(round);
+      }
     })
   }
 
@@ -283,15 +282,7 @@ export class AppComponent implements OnInit {
       }
     }).afterClosed().pipe(
       filter(round => round != null),
-    ).subscribe(round => {
-      this.rounds.update(r => {
-        return [round, ...r];
-      })
-    })
-  }
-
-  loadSession(key: string) {
-
+    ).subscribe()
   }
 
   sortStats(event: Sort) {
@@ -301,7 +292,7 @@ export class AppComponent implements OnInit {
 
   computeDataSource() {
     const players = this.players();
-    const rounds = this.rounds();
+    const rounds = this.matchups().reduce<Round[]>((acc, m) => acc.concat(m.rounds()), []);
     const sortBy = this.sortBy();
     const sortDirection = this.sortDirection();
     const isDefaultSort = this.isDefaultSort();
