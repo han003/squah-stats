@@ -123,9 +123,51 @@
 
       &.matchups {
         display: grid;
+        grid-gap: 16px;
 
         #match-select {
           width: 100%
+        }
+
+        #matchup-details {
+          display: grid;
+          grid-template-areas: 'player1name versus player2name'
+          'player1wins versus player2wins';
+          align-items: center;
+          justify-content: center;
+          column-gap: 32px;
+          row-gap: 4px;
+
+          .wins {
+            font: var(--mat-sys-display-large);
+          }
+
+          .player1.name {
+            grid-area: player1name;
+            font: var(--mat-sys-label-medium);
+            opacity: 0.8;
+            text-align: right;
+          }
+
+          .player2.name {
+            grid-area: player2name;
+            font: var(--mat-sys-label-medium);
+            opacity: 0.8;
+          }
+
+          .player1.wins {
+            grid-area: player1wins;
+            text-align: right;
+          }
+
+          .player2.wins {
+            grid-area: player2wins;
+          }
+
+          .versus {
+            grid-area: versus;
+            font: var(--mat-sys-display-small);
+          }
         }
       }
     }

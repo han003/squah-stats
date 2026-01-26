@@ -103,14 +103,12 @@
 
       @let matchup = selectedMatchup();
       @if (matchup) {
-        <div class="matchup-details">
-          <div id="score">
-            <span class="player1 name">{{ matchup.player1.name() }}</span>
-            <span class="player1 points">{{ matchup.player1Wins() }}</span>
-            <span>vs.</span>
-            <span class="player2 name">{{ matchup.player2.name() }}</span>
-            <span class="player2 points">{{ matchup.player2Wins() }}</span>
-          </div>
+        <div id="matchup-details">
+          <span class="player1 name">{{ matchup.player1.name() }}</span>
+          <span class="player1 wins">{{ matchup.player1Wins() }}</span>
+          <span class="versus">vs.</span>
+          <span class="player2 name">{{ matchup.player2.name() }}</span>
+          <span class="player2 wins">{{ matchup.player2Wins() }}</span>
         </div>
       } @else {
         <p>Please select a matchup to see details.</p>
