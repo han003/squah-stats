@@ -4,11 +4,11 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { Player, PlayerSaveData } from './player';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatList, MatListItem, MatListItemMeta } from '@angular/material/list';
 import { MatDivider } from '@angular/material/divider';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AddRoundDialogComponent, AddRoundDialogData } from './add-round-dialog/add-round-dialog.component';
@@ -24,6 +24,10 @@ import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog/conf
 import { MatSort, MatSortHeader, Sort, SortDirection } from '@angular/material/sort';
 import { sort } from './shared/sort';
 import { StartingOrderDialogComponent, StartingOrderDialogData } from './starting-order-dialog/starting-order-dialog.component';
+import { Matchup } from './matchup';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { random } from 'lodash-es';
+import { RoundsListComponent } from './rounds-list/rounds-list.component';
 
 @Component({
   selector: 'app-root',
@@ -62,6 +66,11 @@ import { StartingOrderDialogComponent, StartingOrderDialogData } from './startin
     MatExpansionPanelActionRow,
     MatSort,
     MatSortHeader,
+    MatSelect,
+    MatOption,
+    FormsModule,
+    RoundsListComponent,
+    MatHint,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -76,32 +85,33 @@ export class AppComponent implements OnInit {
   selectedTabIndex = signal(0);
   language = signal(navigator.language);
   players = signal<Player[]>([]);
-  rounds = signal<Round[]>([]);
+  matchups = computed(this.computeMatchups.bind(this));
   sortBy = signal<string>('');
   sortDirection = signal<SortDirection>('');
   isDefaultSort = computed(() => !this.sortDirection());
   playersTabLabel = computed(() => `Players (${this.players().length})`)
+  rounds = computed(() => this.matchups().reduce<Round[]>((acc, m) => acc.concat(m.rounds()), []));
   roundsTabLabel = computed(() => `Rounds (${this.rounds().length})`)
   insufficientPlayers = computed(() => this.players().length < 2);
+  selectedMatchup = signal<Matchup | null>(null);
   statsColumns = ['player', 'matches', 'wins', 'winRate', 'points', 'diff', 'pointsPerMatch', 'pointsPerWin', 'pointsPerLoss'];
   newPlayerControl = new FormControl<string | null>(null);
-  sessionNameControl = new FormControl<string | null>(null);
+  sessionNameControl = new FormControl<string | null>(DateTime.now().toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY));
 
   dataSource = computed(this.computeDataSource.bind(this));
 
   constructor() {
     const url = new URL(window.location.href);
     const sessionKey = url.searchParams.get('session') || this.session().key;
-    const initialTab = parseInt(String(url.searchParams.get('tab')));
+    const initialTab = this.insufficientPlayers() ? 0 : parseInt(String(url.searchParams.get('tab')));
     this.selectedTabIndex.set(Number.isFinite(initialTab) ? initialTab : 0);
 
-    const {session, players, rounds} = this.getSessionData(sessionKey);
-    this.players.set(players);
-    this.rounds.set(rounds);
-    this.session.set(session);
-
-    this.sessionNameControl.setValue(session.name());
-    this.sessionNameControl.setValue(session.name());
+    // const {session, players} = this.getSessionData(sessionKey);
+    // this.players.set(players);
+    // this.session.set(session);
+    //
+    // this.sessionNameControl.setValue(session.name());
+    // this.sessionNameControl.setValue(session.name());
 
     this.sessionNameControl.valueChanges.subscribe(value => {
       this.session().name.set(value || '');
@@ -112,77 +122,64 @@ export class AppComponent implements OnInit {
       url.searchParams.set('session', this.session().key);
       window.history.pushState({}, '', url.toString());
     })
-
-    effect(() => {
-      localStorage.setItem(this.getSessionKey(this.session().key), btoa(this.session().toString()));
-      localStorage.setItem(this.getPlayersSessionKey(this.session().key), btoa(JSON.stringify(this.players().map(p => p.toString()))));
-      localStorage.setItem(this.getRoundsSessionKey(this.session().key), btoa(JSON.stringify(this.rounds().map(p => p.toString()))));
-    })
   }
 
   ngOnInit() {
-    const sessions = Object.entries(localStorage).reduce((acc, [key, value]) => {
-      const id = this.extractSessionKey(key);
-      acc.set(id, this.getSessionData(id).session);
-      return acc;
-    }, new Map<string, Session>());
+    // const sessions = Object.entries(localStorage).reduce((acc, [key, _]) => {
+    //   const id = this.extractSessionKey(key);
+    //   acc.set(id, this.getSessionData(id).session);
+    //   return acc;
+    // }, new Map<string, Session>());
+    //
+    // this.sessions.set(Array.from(sessions.values()));
 
-    this.sessions.set(Array.from(sessions.values()));
+    // this.mock();
   }
 
-  extractSessionKey(key: string) {
-    return key.replaceAll('session-', '').replaceAll('-players', '').replaceAll('-rounds', '');
-  }
+  private mock() {
+    this.players.set([
+      new Player('Joar'),
+      new Player('Sivert'),
+      new Player('Egil'),
+      new Player('Melting'),
+    ]);
 
-  getSessionKey(session: string) {
-    return `session-${session}`;
-  }
+    this.matchups().forEach(matchup => {
+      for (let i = 0; i < 7; i++) {
+        const winningScore = random(0, 100) > 80 ? random(11, 15) : 11;
+        const losingScore = winningScore > 11 ? winningScore - 2 : random(0, 9);
+        const winner = Math.random() > 0.5 ? matchup.player1 : matchup.player2;
 
-  getPlayersSessionKey(session: string) {
-    return `session-${session}-players`;
-  }
-
-  getRoundsSessionKey(session: string) {
-    return `session-${session}-rounds`;
-  }
-
-  getSessionData(sessionKey: string) {
-    const players: Player[] = [];
-    const rounds: Round[] = [];
-    const session: Session = new Session(sessionKey);
-
-    const storedSession = localStorage.getItem(this.getSessionKey(sessionKey));
-    if (storedSession) {
-      const sessionData = JSON.parse(atob(storedSession)) as SessionSaveData;
-      session.name.set(sessionData.name);
-    }
-
-    const storedPlayers = localStorage.getItem(this.getPlayersSessionKey(sessionKey));
-    if (storedPlayers) {
-      const playerStrings = JSON.parse(atob(storedPlayers)) as string[];
-
-      playerStrings.forEach(player => {
-        const playerData = JSON.parse(player) as PlayerSaveData;
-        players.push(new Player(playerData.name, {id: playerData.id}));
-      })
-
-      const storedRounds = localStorage.getItem(this.getRoundsSessionKey(sessionKey));
-      if (storedRounds) {
-        const roundStrings = JSON.parse(atob(storedRounds)) as string[];
-
-        roundStrings.forEach(round => {
-          const roundData = JSON.parse(round) as RoundSaveData;
-          const player1 = players.find(p => p.id() === roundData.player1.id);
-          const player2 = players.find(p => p.id() === roundData.player2.id);
-
-          if (player1 && player2) {
-            rounds.push(new Round(player1, roundData.player1.score, player2, roundData.player2.score, {createdAt: DateTime.fromFormat(roundData.createdAt, Round.createdAtFormat)}))
-          }
-        })
+        const round = new Round(
+          winner,
+          winningScore,
+          winner.id() === matchup.player1.id() ? matchup.player2 : matchup.player1,
+          losingScore,
+          {createdAt: DateTime.now().minus({days: Math.floor(Math.random() * 30)})}
+        );
+        matchup.addRound(round);
       }
-    }
+    })
+  }
 
-    return {session, players, rounds};
+  private computeMatchups() {
+    const players = this.players();
+    const matchups = new Map<string, Matchup>();
+
+    players.forEach(p1 => {
+      players.forEach(p2 => {
+        if (p1.id() === p2.id()) {
+          return;
+        }
+
+        const matchupKey = Matchup.createId(p1, p2);
+        if (!matchups.has(matchupKey)) {
+          matchups.set(matchupKey, new Matchup(p1, p2));
+        }
+      })
+    })
+
+    return Array.from(matchups.values());
   }
 
   newSession() {
@@ -191,7 +188,7 @@ export class AppComponent implements OnInit {
     this.session.set(session);
     this.sessions.update(sessions => [...sessions, session]);
     this.players.set([]);
-    this.rounds.set([]);
+    this.selectedTabIndex.set(0);
 
     this.matSnackBar.open('New session started');
   }
@@ -208,9 +205,7 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    this.players.update((p) => {
-      return [...p, new Player(name)];
-    });
+    this.players.update((p) => [...p, new Player(name)]);
 
     this.newPlayerControl.reset();
     this.matSnackBar.open(`${name} added!`, undefined, {duration: 2000});
@@ -243,9 +238,11 @@ export class AppComponent implements OnInit {
     }).afterClosed().pipe(
       filter(round => round != null),
     ).subscribe(round => {
-      this.rounds.update(r => {
-        return [round, ...r];
-      })
+      const matchupId = Matchup.createId(round.players[0]?.player, round.players[1]?.player);
+      const matchup = this.matchups().find(m => m.id === matchupId);
+      if (matchup) {
+        matchup.addRound(round);
+      }
     })
   }
 
@@ -257,15 +254,7 @@ export class AppComponent implements OnInit {
       }
     }).afterClosed().pipe(
       filter(round => round != null),
-    ).subscribe(round => {
-      this.rounds.update(r => {
-        return [round, ...r];
-      })
-    })
-  }
-
-  loadSession(key: string) {
-
+    ).subscribe()
   }
 
   sortStats(event: Sort) {
@@ -275,7 +264,7 @@ export class AppComponent implements OnInit {
 
   computeDataSource() {
     const players = this.players();
-    const rounds = this.rounds();
+    const rounds = this.matchups().reduce<Round[]>((acc, m) => acc.concat(m.rounds()), []);
     const sortBy = this.sortBy();
     const sortDirection = this.sortDirection();
     const isDefaultSort = this.isDefaultSort();

@@ -9,7 +9,7 @@
 <mat-menu #menu="matMenu">
   <button mat-menu-item (click)="newSession()">New session</button>
   <mat-divider></mat-divider>
-  <button mat-menu-item disabled>version {{version}}</button>
+  <button mat-menu-item disabled>version {{ version }}</button>
 </mat-menu>
 
 <mat-tab-group (selectedIndexChange)="tabChange($event)" [selectedIndex]="selectedTabIndex()">
@@ -32,7 +32,7 @@
       <mat-list>
         @for (player of players(); track player.id()) {
           <mat-list-item>
-            <span matListItemTitle >{{ $index + 1 }}. {{ player.name() }}</span>
+            <span matListItemTitle>{{ $index + 1 }}. {{ player.name() }}</span>
 
             <button mat-icon-button (click)="removePlayer(player)" matListItemMeta>
               <mat-icon>delete</mat-icon>
@@ -55,40 +55,39 @@
 
       <button mat-flat-button (click)="addRound()">Add round</button>
 
-      <div id="rounds-list">
-        @for (round of rounds(); track round.createdAt) {
-          <div class="round">
-            <span class="players">
-              @for (player of round.players; track player.player.id()) {
-                <span>{{ player.player.name() }}</span>
-
-                @if (!$last) {
-                  <span class="versus">vs.</span>
-                }
-              }
-             </span>
-
-            <span class="score">
-                @for (player of round.players; track player.player.id()) {
-                  <span>{{ player.score }}</span>
-
-                  @if (!$last) {
-                    <span> — </span>
-                  }
-                }
-             </span>
-
-            <span class="time">{{ round.createdAtTimeString }}</span>
-          </div>
-
-
-          @if (!$last) {
-            <mat-divider></mat-divider>
-          }
-        }
-      </div>
+      <app-rounds-list [rounds]="rounds()"/>
     </div>
   </mat-tab>
+
+  <mat-tab label="Matchups" [disabled]="insufficientPlayers()">
+    <div class="tab-content matchups">
+      <mat-form-field id="match-select">
+        <mat-label>Matchup</mat-label>
+        <mat-select [(ngModel)]="selectedMatchup">
+          @for (matchup of matchups(); track matchup.id) {
+            <mat-option [value]="matchup">{{ matchup.player1.name() }} — {{ matchup.player2.name() }}</mat-option>
+          }
+        </mat-select>
+        @if (!selectedMatchup()) {
+          <mat-hint>Please select a matchup to see details.</mat-hint>
+        }
+      </mat-form-field>
+
+      @let matchup = selectedMatchup();
+      @if (matchup) {
+        <div id="matchup-details">
+          <span class="player1 name">{{ matchup.player1.name() }}</span>
+          <span class="player1 wins">{{ matchup.player1Wins() }}</span>
+          <span class="versus">vs.</span>
+          <span class="player2 name">{{ matchup.player2.name() }}</span>
+          <span class="player2 wins">{{ matchup.player2Wins() }}</span>
+        </div>
+
+        <app-rounds-list [rounds]="matchup.rounds()"/>
+      }
+    </div>
+  </mat-tab>
+
 
   <mat-tab label="Statistics" [disabled]="insufficientPlayers()">
     <div class="tab-content stats">
@@ -154,13 +153,13 @@
         @for (session of sessions(); track session.key) {
           <mat-expansion-panel>
             <mat-expansion-panel-header>
-              <mat-panel-title>{{session.name() || session.key}}</mat-panel-title>
+              <mat-panel-title>{{ session.name() || session.key }}</mat-panel-title>
             </mat-expansion-panel-header>
 
             <p>This is the primary content of the panel.</p>
 
             <mat-action-row>
-              <button mat-button (click)="loadSession(session.key)">Load session</button>
+              <button mat-button>Load session</button>
             </mat-action-row>
           </mat-expansion-panel>
         }
