@@ -3,7 +3,8 @@
 
   .round {
     display: grid;
-    grid-template-areas: 'players score' 'time score';
+    grid-template-areas: 'players score delete' 'time score delete';
+    grid-template-columns: 1fr auto auto;
     row-gap: 2px;
     column-gap: 16px;
     align-items: center;
@@ -30,6 +31,10 @@
 
     .time {
       grid-area: time;
+    }
+
+    .delete-button {
+      grid-area: delete;
     }
   }
 }

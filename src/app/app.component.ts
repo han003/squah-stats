@@ -133,7 +133,7 @@ export class AppComponent implements OnInit {
     //
     // this.sessions.set(Array.from(sessions.values()));
 
-    // this.mock();
+    this.mock();
   }
 
   private mock() {
@@ -158,6 +158,21 @@ export class AppComponent implements OnInit {
           {createdAt: DateTime.now().minus({days: Math.floor(Math.random() * 30)})}
         );
         matchup.addRound(round);
+      }
+    })
+  }
+
+  deleteRound(round: Round) {
+    this.matDialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean | null>(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete round',
+        message: `Are you sure you want to delete this round?`,
+        confirmText: 'Delete',
+      }
+    }).afterClosed().subscribe(result => {
+      if (result === true) {
+        round.deleted.set(true);
+        this.matSnackBar.open(`Round deleted`, undefined, {duration: 2000});
       }
     })
   }
