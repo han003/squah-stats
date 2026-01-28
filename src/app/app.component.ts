@@ -133,7 +133,7 @@ export class AppComponent implements OnInit {
     //
     // this.sessions.set(Array.from(sessions.values()));
 
-    this.mock();
+    // this.mock();
   }
 
   private mock() {
@@ -279,7 +279,7 @@ export class AppComponent implements OnInit {
 
   computeDataSource() {
     const players = this.players();
-    const rounds = this.matchups().reduce<Round[]>((acc, m) => acc.concat(m.rounds()), []);
+    const rounds = this.rounds();
     const sortBy = this.sortBy();
     const sortDirection = this.sortDirection();
     const isDefaultSort = this.isDefaultSort();

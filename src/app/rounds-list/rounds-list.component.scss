@@ -21,6 +21,10 @@
       grid-area: players;
       font: var(--mat-sys-body-large);
       gap: 4px;
+
+      .winner {
+        color: var(--mat-sys-primary);
+      }
     }
 
     .score {

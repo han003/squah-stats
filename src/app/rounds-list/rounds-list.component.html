@@ -1,8 +1,8 @@
-@for (round of rounds(); track round.createdAt) {
+@for (round of sortedRounds(); track round.createdAt) {
   <div class="round">
             <span class="players">
               @for (player of round.players; track player.player.id()) {
-                <span>{{ player.player.name() }}</span>
+                <span [class.winner]="round.winner?.player?.id() === player.player.id()">{{ player.player.name() }}</span>
 
                 @if (!$last) {
                   <span class="versus">vs.</span>
