@@ -162,6 +162,21 @@ export class AppComponent implements OnInit {
     })
   }
 
+  deleteRound(round: Round) {
+    this.matDialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean | null>(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete round',
+        message: `Are you sure you want to delete this round?`,
+        confirmText: 'Delete',
+      }
+    }).afterClosed().subscribe(result => {
+      if (result === true) {
+        round.deleted.set(true);
+        this.matSnackBar.open(`Round deleted`, undefined, {duration: 2000});
+      }
+    })
+  }
+
   private computeMatchups() {
     const players = this.players();
     const matchups = new Map<string, Matchup>();
@@ -264,7 +279,7 @@ export class AppComponent implements OnInit {
 
   computeDataSource() {
     const players = this.players();
-    const rounds = this.matchups().reduce<Round[]>((acc, m) => acc.concat(m.rounds()), []);
+    const rounds = this.rounds();
     const sortBy = this.sortBy();
     const sortDirection = this.sortDirection();
     const isDefaultSort = this.isDefaultSort();

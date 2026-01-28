@@ -55,7 +55,7 @@
 
       <button mat-flat-button (click)="addRound()">Add round</button>
 
-      <app-rounds-list [rounds]="rounds()"/>
+      <app-rounds-list [rounds]="rounds()" (delete)="deleteRound($event)"/>
     </div>
   </mat-tab>
 
@@ -83,7 +83,7 @@
           <span class="player2 wins">{{ matchup.player2Wins() }}</span>
         </div>
 
-        <app-rounds-list [rounds]="matchup.rounds()"/>
+        <app-rounds-list [rounds]="matchup.rounds()" (delete)="deleteRound($event)"/>
       }
     </div>
   </mat-tab>

@@ -28,6 +28,7 @@ export class Round {
   roundPlayer2: RoundPlayer;
   players: RoundPlayer[];
   winner: RoundPlayer | null = null;
+  deleted = signal(false);
 
   constructor(player1: Player, player1Score: number, player2: Player, player2Score: number, extra?: {createdAt: DateTime}) {
     this.roundPlayer1 = {player: player1, score: player1Score};

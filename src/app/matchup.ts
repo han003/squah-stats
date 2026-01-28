@@ -6,8 +6,9 @@ export class Matchup {
   id: string;
   player1: Player;
   player2: Player;
-  rounds = signal<Round[]>([]);
-  roundCount = computed(() => this.rounds().length);
+  // Rounds including deleted ones
+  allRounds = signal<Round[]>([]);
+  rounds = computed(() => this.allRounds().filter(r => !r.deleted()));
   player1Wins = computed(() => this.rounds().filter(r => r.winner?.player === this.player1).length);
   player2Wins = computed(() => this.rounds().filter(r => r.winner?.player === this.player2).length);
 
@@ -18,7 +19,7 @@ export class Matchup {
   }
 
   addRound(round: Round) {
-    this.rounds.update(r => [...r, round]);
+    this.allRounds.update(r => [...r, round]);
   }
 
   static createId(player1?: Player, player2?: Player): string {
