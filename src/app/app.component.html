@@ -65,7 +65,7 @@
         <mat-label>Matchup</mat-label>
         <mat-select [(ngModel)]="selectedMatchup">
           @for (matchup of matchups(); track matchup.id) {
-            <mat-option [value]="matchup">{{ matchup.player1.name() }} — {{ matchup.player2.name() }}</mat-option>
+            <mat-option [value]="matchup">{{ matchup.player1.name() }} ({{matchup.player1Wins()}}) — {{ matchup.player2.name() }} ({{matchup.player2Wins()}})</mat-option>
           }
         </mat-select>
         @if (!selectedMatchup()) {

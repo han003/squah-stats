@@ -66,7 +66,7 @@ export class AddRoundDialogComponent {
     }
 
     const diff = Math.abs(player1.score() - player2.score());
-    if (diff !== 2) {
+    if (diff < 2) {
       return undefined;
     }
 
